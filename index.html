@@ -14,36 +14,27 @@
             --green: #2ecc71;
             --red: #e63946;
             --text-main: #ffffff;
-            --text-sec: #aaaaaa;
-            --chat-bg-user: #007aff;
-            --chat-bg-support: #333;
+            --chat-user: #007aff;
+            --chat-support: #333;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            margin: 0; padding: 0; padding-bottom: 80px;
+            margin: 0; padding: 20px; padding-bottom: 80px;
             -webkit-tap-highlight-color: transparent;
         }
 
         /* HEADER */
         .header {
-            position: sticky; top: 0;
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
             display: flex; justify-content: space-between; align-items: center;
-            z-index: 100; border-bottom: 1px solid #333;
+            margin-bottom: 20px; font-weight: bold;
         }
-        .wallet { font-weight: 700; font-size: 14px; display: flex; gap: 15px; }
+        .wallet { display: flex; gap: 15px; font-size: 16px; }
         
-        /* GENERAL UI */
-        .container { padding: 20px; }
-        h2 { margin: 10px 0 20px 0; font-size: 18px; }
-        
-        /* GAME CARDS */
-        .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        /* GAMES GRID */
+        .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .game-card {
             background: var(--card-bg); border-radius: 16px;
             height: 120px; position: relative; overflow: hidden;
@@ -54,516 +45,321 @@
         .game-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
         .game-title {
             position: absolute; bottom: 10px; left: 10px; right: 10px;
-            font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-            font-size: 14px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-size: 14px;
         }
 
-        /* PRODUCTS SLIDER & OFFER */
-        .slider-container {
-            display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px;
-            scrollbar-width: none;
-        }
-        .slider-container::-webkit-scrollbar { display: none; }
+        /* PRODUCTS LIST */
+        .products-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .back-btn { background: none; border: none; color: #aaa; font-size: 14px; cursor: pointer; }
         
         .item-card {
-            min-width: 150px; background: var(--card-bg);
-            border-radius: 14px; padding: 10px;
-            display: flex; flex-direction: column; align-items: center;
-            position: relative;
+            background: var(--card-bg); border-radius: 14px; padding: 15px;
+            margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
         }
-        .item-card.special-offer { border: 1px solid var(--red); }
-        .offer-badge {
-            position: absolute; top: -8px; right: -8px;
-            background: var(--red); color: white;
-            font-size: 10px; padding: 4px 8px; border-radius: 10px;
-            font-weight: bold; animation: pulse 2s infinite;
+        .item-info { display: flex; align-items: center; gap: 15px; }
+        .item-img { width: 50px; height: 50px; background: #333; border-radius: 10px; object-fit: cover; }
+        .btn-buy {
+            background: var(--blue); color: white; border: none;
+            padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
         }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        
-        .item-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; background: #333; }
-        .timer { color: var(--red); font-size: 11px; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
 
-        .btn {
-            width: 100%; padding: 10px; border: none; border-radius: 8px;
-            font-weight: 600; cursor: pointer; margin-top: auto; font-size: 13px;
-        }
-        .btn-buy { background: var(--blue); color: white; }
-        .btn-get { background: var(--accent); color: black; animation: pop 0.3s; }
-        @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
-
-        /* NOTIFICATIONS */
-        .notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid #444; border-radius: 50px;
-            padding: 10px 20px; display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; width: 85%; max-width: 350px;
-        }
-        .notification.show { transform: translateX(-50%) translateY(0); }
-        .notif-avatar { width: 35px; height: 35px; border-radius: 50%; background: #eee; object-fit: cover; }
-
-        /* MODALS */
+        /* CHAT MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1000;
-            display: none; align-items: flex-end; /* Bottom sheet style */
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            display: none; flex-direction: column;
         }
-        .modal-overlay.active { display: flex; }
-        .modal-content {
-            background: #1c1c1e; width: 100%; border-radius: 20px 20px 0 0;
-            padding: 25px; box-sizing: border-box; animation: slideUp 0.3s;
-            max-height: 90vh; overflow-y: auto;
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* CHAT UI */
         .chat-header {
-            display: flex; align-items: center; gap: 10px; padding-bottom: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;
+            padding: 15px; border-bottom: 1px solid #333; background: #1c1c1e;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .support-badge { background: rgba(46, 204, 113, 0.2); color: var(--green); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; }
-        .chat-messages { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 15px; }
-        .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; }
-        .msg.support { align-self: flex-start; background: var(--chat-bg-support); color: white; border-bottom-left-radius: 4px; }
-        .msg.user { align-self: flex-end; background: var(--chat-bg-user); color: white; border-bottom-right-radius: 4px; }
-        .chat-input-area { display: flex; gap: 10px; border-top: 1px solid #333; padding-top: 15px; }
+        .chat-box {
+            flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .msg.user { align-self: flex-end; background: var(--chat-user); color: white; border-bottom-right-radius: 4px; }
+        .msg.support { align-self: flex-start; background: var(--chat-support); color: white; border-bottom-left-radius: 4px; }
         
-        /* ADMIN UI */
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
-        .tab-btn { background: #333; color: #fff; border:none; padding: 8px 12px; border-radius: 8px; font-size: 12px; white-space: nowrap; }
-        .tab-btn.active { background: var(--text-main); color: black; }
-        .admin-btn-float {
-            position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
-            background: #e63946; border-radius: 50%; color: white; font-size: 24px;
-            display: none; justify-content: center; align-items: center; z-index: 90;
-            box-shadow: 0 4px 15px rgba(230,57,70,0.6); cursor: pointer;
+        .chat-input-area {
+            padding: 15px; background: #1c1c1e; display: flex; gap: 10px;
+            border-top: 1px solid #333;
         }
-        input, select { background: #2c2c2e; border: 1px solid #444; color: white; width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        input {
+            width: 100%; background: #2c2c2e; border: none; color: white;
+            padding: 12px; border-radius: 8px; outline: none;
+        }
 
+        /* FLOATING BUTTONS */
+        .fab-chat {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 55px; height: 55px; background: var(--green);
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 26px; box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4); cursor: pointer; z-index: 100;
+        }
+
+        /* ADMIN BTN */
+        .fab-admin {
+            position: fixed; bottom: 20px; left: 20px;
+            width: 40px; height: 40px; background: var(--red);
+            border-radius: 50%; display: none; justify-content: center; align-items: center;
+            font-size: 20px; cursor: pointer; z-index: 100;
+        }
+
+        /* MODAL FOR EMAIL */
+        .email-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; background: #252525; padding: 25px; border-radius: 20px;
+            z-index: 3000; display: none; text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="wallet">
-            <span>💎 <span id="bal-coins">0</span></span>
-            <span>₽ <span id="bal-rub">0</span></span>
+            <span>💎 <span id="coins">...</span></span>
+            <span>₽ <span id="rubles">...</span></span>
         </div>
-        <div id="user-status" style="font-size:12px; color:#aaa;">В сети</div>
+        <div id="username" style="color: #888; font-size: 14px;">Loading...</div>
     </div>
 
-    <div class="container">
-        <h2 id="games-head">Выберите игру</h2>
-        <div class="games-grid" id="games-container"></div>
-
-        <div id="shop-section" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 id="selected-game-title">Товары</h2>
-                <button onclick="backToGames()" style="background:none; border:none; color:#aaa;">✕ Назад</button>
+    <div id="screen-games">
+        <h2 style="margin-top:0;">Выберите игру</h2>
+        <div class="games-grid">
+            <div class="game-card" onclick="openGame('brawl', 'Brawl Stars')">
+                <img src="https://wallpapers.com/images/hd/brawl-stars-loading-screen-background-p7m8f2z9j0k1q3w4.jpg">
+                <div class="game-title">Brawl Stars</div>
             </div>
-            <div class="slider-container" id="products-container"></div>
-        </div>
-    </div>
-
-    <div id="admin-float" class="admin-btn-float" onclick="openAdmin()">⚙️</div>
-
-    <div id="notif-toast" class="notification" onclick="openChat()">
-        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" class="notif-avatar">
-        <div>
-            <div style="font-weight:bold; font-size:13px;">Вика К. <span style="color:var(--green)">[Support]</span></div>
-            <div style="font-size:12px; color:#ccc;">Новое сообщение...</div>
-        </div>
-    </div>
-
-    <div id="email-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>📦 Получение товара</h3>
-            <p style="color:#aaa; font-size:13px; margin-bottom:20px;">Введите ваш Supercell ID / Email для доставки.</p>
-            <input type="email" id="user-email" placeholder="name@example.com">
-            <button onclick="submitEmail()" class="btn btn-buy">Подтвердить</button>
-            <button onclick="closeModal('email-modal')" style="background:transparent; color:#aaa; width:100%; border:none; padding:10px;">Отмена</button>
-        </div>
-    </div>
-
-    <div id="chat-modal" class="modal-overlay" style="z-index: 2500;">
-        <div class="modal-content" style="height: 80vh;">
-            <div class="chat-header">
-                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:40px; height:40px; border-radius:50%;">
-                <div>
-                    <div style="font-weight:bold;">Вика К. <span class="support-badge">ПОДДЕРЖКА</span></div>
-                    <div style="font-size:12px; color:var(--green);">Online</div>
-                </div>
-                <button onclick="closeModal('chat-modal')" style="margin-left:auto; background:none; border:none; color:#aaa; font-size:20px;">✕</button>
-            </div>
-            
-            <div class="chat-messages" id="chat-box"></div>
-            
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Сообщение..." style="margin:0;">
-                <button onclick="sendUserMessage()" style="width:50px; background:var(--chat-bg-user); border:none; border-radius:8px; color:white;">➤</button>
+            <div class="game-card" onclick="openGame('clash', 'Clash Royale')">
+                <img src="https://images7.alphacoders.com/678/678122.jpg">
+                <div class="game-title">Clash Royale</div>
             </div>
         </div>
     </div>
 
-    <div id="admin-modal" class="modal-overlay">
-        <div class="modal-content" style="height: 85vh;">
-            <h3>🛠 Админ Панель</h3>
-            
-            <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab('tab-products')">Товары</button>
-                <button class="tab-btn" onclick="switchTab('tab-games')">Игры</button>
-                <button class="tab-btn" onclick="switchTab('tab-users')">Юзеры / Чат</button>
-            </div>
-
-            <div id="tab-products">
-                <select id="adm-game-select"></select>
-                <input type="text" id="adm-name" placeholder="Название (30 Гемов)">
-                <input type="number" id="adm-price-c" placeholder="Цена (монеты)">
-                <input type="number" id="adm-price-r" placeholder="Цена (рубли)">
-                <input type="text" id="adm-img" placeholder="Ссылка на картинку товара">
-                
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-                    <input type="checkbox" id="adm-offer" style="width:20px;">
-                    <label>Спецпредложение (Таймер)</label>
-                </div>
-                
-                <button onclick="admAddProduct()" class="btn btn-buy" style="background:var(--green);">Создать товар</button>
-            </div>
-
-            <div id="tab-games" style="display:none;">
-                <p style="font-size:12px; color:#aaa;">Редактирование обложек игр</p>
-                <select id="adm-edit-game-id" onchange="loadGameData()">
-                    <option value="brawl">Brawl Stars</option>
-                    <option value="clash">Clash Royale</option>
-                </select>
-                <input type="text" id="adm-game-name" placeholder="Название раздела">
-                <input type="text" id="adm-game-img" placeholder="URL Обложки (Banner)">
-                <button onclick="admSaveGame()" class="btn btn-buy">Сохранить обложку</button>
-            </div>
-
-            <div id="tab-users" style="display:none;">
-                <p style="font-size:12px; color:#aaa;">Активные пользователи</p>
-                <div style="background:#2c2c2e; padding:10px; border-radius:8px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>@currentUser</strong>
-                        <span style="color:var(--green)">Online</span>
-                    </div>
-                    <div style="font-size:12px; color:#aaa; margin-top:5px;">ID: 123456789</div>
-                    <button onclick="admOpenChat()" style="width:100%; margin-top:10px; padding:8px; background:#444; border:none; color:white; border-radius:6px;">Написать от поддержки</button>
-                </div>
-            </div>
-
-            <button onclick="closeModal('admin-modal')" style="margin-top:20px; background:transparent; color:#aaa; border:none; width:100%;">Закрыть</button>
+    <div id="screen-products" style="display:none;">
+        <div class="products-header">
+            <button class="back-btn" onclick="backToGames()">⬅ Назад</button>
+            <h3 id="game-title-label" style="margin:0;">Товары</h3>
         </div>
+        <div id="products-container">
+            </div>
+    </div>
+
+    <div class="fab-chat" onclick="openChat()">💬</div>
+    
+    <div class="fab-admin" id="admin-btn" onclick="tg.showAlert('Используй бота для добавления товаров: /add')">⚙️</div>
+
+    <div class="modal-overlay" id="chat-modal">
+        <div class="chat-header">
+            <span>👩‍💻 Поддержка</span>
+            <button onclick="closeChat()" style="background:none; border:none; color:#aaa; font-size:20px;">✕</button>
+        </div>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Напишите сообщение...">
+            <button onclick="sendMessage()" style="background: var(--chat-user); border:none; color:white; padding: 0 15px; border-radius: 8px;">➤</button>
+        </div>
+    </div>
+
+    <div class="email-modal" id="email-modal">
+        <h3>🎉 Покупка успешна!</h3>
+        <p style="color:#aaa; font-size:13px;">Введите ваш Email / ID для получения товара.</p>
+        <input type="text" id="delivery-data" placeholder="Supercell ID..." style="margin-bottom:15px;">
+        <button onclick="submitDelivery()" style="width:100%; padding:12px; background:var(--green); border:none; border-radius:10px; color:white; font-weight:bold;">Отправить</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 1. КОНФИГУРАЦИЯ
-        const ADMIN_ID = 947269219; // <-- ЗАМЕНИТЬ НА СВОЙ ID
+        // ==========================================================
+        // ⚙️ НАСТРОЙКИ (ВСТАВЬ ССЫЛКУ ИЗ NGROK НИЖЕ)
+        // Пример: const BASE_URL = "https://a1b2-c3d4.ngrok-free.app";
+        const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev"; 
         
-        let user = JSON.parse(localStorage.getItem('shop_user')) || {
-            coins: 50, rubles: 0, boughtItems: [], id: tg.initDataUnsafe.user?.id || 0
-        };
+        // ID Юзера (Если открыто не в ТГ, используем тест ID)
+        const USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 123456789;
+        const ADMIN_ID_CONST = 947269219; // Твой ID для отображения шестеренки
+        // ==========================================================
 
-        // База данных (в памяти)
-        let games = JSON.parse(localStorage.getItem('shop_games')) || [
-            { id: 'brawl', name: 'Brawl Stars', img: 'https://wallpapers.com/images/hd/brawl-stars-loading-screen-background-p7m8f2z9j0k1q3w4.jpg' },
-            { id: 'clash', name: 'Clash Royale', img: 'https://images7.alphacoders.com/678/678122.jpg' }
-        ];
+        let chatInterval = null;
 
-        let products = JSON.parse(localStorage.getItem('shop_products')) || [
-            { id: 1, gameId: 'brawl', name: '30 Гемов', priceC: 50, priceR: 99, img: 'https://cdn-icons-png.flaticon.com/512/2696/2696047.png', isOffer: false },
-            { id: 2, gameId: 'brawl', name: 'Mega Box', priceC: 150, priceR: 299, img: 'https://cdn-icons-png.flaticon.com/512/3062/3062634.png', isOffer: true, expires: Date.now() + 3600000 }
-        ];
-
-        let chatHistory = JSON.parse(localStorage.getItem('shop_chat')) || [
-            { sender: 'support', text: 'Здравствуйте! Если возникнут вопросы, я здесь.' }
-        ];
+        // 1. УТИЛИТА ДЛЯ ЗАПРОСОВ К ТВОЕМУ СЕРВЕРУ
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) options.body = JSON.stringify(body);
+                
+                const response = await fetch(`${BASE_URL}${endpoint}`, options);
+                return await response.json();
+            } catch (error) {
+                console.error("API Error:", error);
+                tg.showAlert("Ошибка соединения с сервером. Проверьте Ngrok.");
+                return null;
+            }
+        }
 
         // 2. ИНИЦИАЛИЗАЦИЯ
-        function init() {
-            renderBalance();
-            renderGames();
-            
-            const tgUser = tg.initDataUnsafe.user;
-            if (tgUser && tgUser.id === ADMIN_ID) {
-                document.getElementById('admin-float').style.display = 'flex';
+        async function init() {
+            // Имя юзера
+            const username = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Гость";
+            document.getElementById('username').innerText = username;
+
+            // Показываем админку если это ты
+            if (USER_ID === ADMIN_ID_CONST) {
+                document.getElementById('admin-btn').style.display = 'flex';
             }
-            
-            // Запуск таймеров
-            setInterval(updateTimers, 1000);
+
+            // Грузим баланс
+            updateBalance();
         }
 
-        // 3. РЕНДЕРИНГ
-        function renderBalance() {
-            document.getElementById('bal-coins').innerText = user.coins;
-            document.getElementById('bal-rub').innerText = user.rubles;
+        async function updateBalance() {
+            const data = await apiRequest('/api/user', 'POST', { user_id: USER_ID });
+            if (data) {
+                document.getElementById('coins').innerText = data.coins;
+                document.getElementById('rubles').innerText = data.rubles;
+            }
         }
 
-        function renderGames() {
-            const container = document.getElementById('games-container');
+        // 3. ЛОГИКА ИГР И ТОВАРОВ
+        async function openGame(gameId, gameName) {
+            document.getElementById('screen-games').style.display = 'none';
+            document.getElementById('screen-products').style.display = 'block';
+            document.getElementById('game-title-label').innerText = gameName;
+
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<p style="text-align:center; color:#666;">Загрузка...</p>';
+
+            const products = await apiRequest('/api/products'); // Получаем все товары
             container.innerHTML = '';
-            const admSelect = document.getElementById('adm-game-select');
-            admSelect.innerHTML = '';
 
-            games.forEach(g => {
-                // Карточка игры
-                container.innerHTML += `
-                    <div class="game-card" onclick="openGame('${g.id}')">
-                        <img src="${g.img}">
-                        <div class="game-title">${g.name}</div>
-                    </div>
-                `;
-                // Опция в админке
-                admSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
-            });
-        }
+            if (products) {
+                // Фильтруем товары для выбранной игры
+                const items = products.filter(p => p.game_id === gameId);
+                
+                if (items.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#666;">Товаров пока нет. Добавьте через бота /add</p>';
+                    return;
+                }
 
-        function openGame(gameId) {
-            const game = games.find(g => g.id === gameId);
-            document.getElementById('games-head').style.display = 'none';
-            document.getElementById('games-container').style.display = 'none';
-            document.getElementById('shop-section').style.display = 'block';
-            document.getElementById('selected-game-title').innerText = game.name;
-            
-            renderProducts(gameId);
+                items.forEach(p => {
+                    // Используем заглушку если нет картинки
+                    const imgUrl = p.img || 'https://cdn-icons-png.flaticon.com/512/2696/2696047.png';
+                    
+                    container.innerHTML += `
+                        <div class="item-card">
+                            <div class="item-info">
+                                <img src="${imgUrl}" class="item-img">
+                                <div>
+                                    <div style="font-weight:bold;">${p.name}</div>
+                                    <div style="font-size:12px; color:#aaa;">${p.price_c} 💎</div>
+                                </div>
+                            </div>
+                            <button class="btn-buy" onclick="buyItem(${p.price_c})">Купить</button>
+                        </div>
+                    `;
+                });
+            }
         }
 
         function backToGames() {
-            document.getElementById('games-head').style.display = 'block';
-            document.getElementById('games-container').style.display = 'grid';
-            document.getElementById('shop-section').style.display = 'none';
+            document.getElementById('screen-products').style.display = 'none';
+            document.getElementById('screen-games').style.display = 'block';
         }
 
-        function renderProducts(gameId) {
-            const container = document.getElementById('products-container');
-            container.innerHTML = '';
-            
-            const items = products.filter(p => p.gameId === gameId);
-            
-            items.forEach(p => {
-                let btnHtml = '';
-                // Проверяем, куплен ли товар (статус "paid" для этого товара в сессии)
-                const isPaid = user.boughtItems.includes(p.id);
+        // 4. ПОКУПКА
+        async function buyItem(price) {
+            tg.showConfirm(`Купить этот товар за ${price} монет?`, async (confirm) => {
+                if (confirm) {
+                    const res = await apiRequest('/api/buy', 'POST', {
+                        user_id: USER_ID,
+                        price: price
+                    });
 
-                if (isPaid) {
-                    btnHtml = `<button class="btn btn-get" onclick="openGetModal(${p.id})">ПОЛУЧИТЬ</button>`;
-                } else {
-                    btnHtml = `<button class="btn btn-buy" onclick="buyItem(${p.id})">Купить</button>`;
-                }
-
-                let offerHtml = '';
-                let timerHtml = '';
-                if(p.isOffer) {
-                    offerHtml = `<div class="offer-badge">SALE</div>`;
-                    timerHtml = `<div class="timer" id="timer-${p.id}">⏳ 00:00:00</div>`;
-                }
-
-                container.innerHTML += `
-                    <div class="item-card ${p.isOffer ? 'special-offer' : ''}">
-                        ${offerHtml}
-                        <img src="${p.img}" class="item-img" onerror="this.src='https://via.placeholder.com/100'">
-                        <div style="font-weight:bold; font-size:14px; text-align:center;">${p.name}</div>
-                        ${timerHtml}
-                        <div style="font-size:12px; color:#aaa; margin:5px 0;">${p.priceC} 🪙 / ${p.priceR} ₽</div>
-                        ${btnHtml}
-                    </div>
-                `;
-            });
-            updateTimers(); // Сразу обновить цифры
-        }
-
-        // 4. ТАЙМЕРЫ
-        function updateTimers() {
-            const now = Date.now();
-            products.forEach(p => {
-                if(p.isOffer && p.expires > now) {
-                    const el = document.getElementById(`timer-${p.id}`);
-                    if(el) {
-                        const diff = p.expires - now;
-                        const h = Math.floor(diff / (1000 * 60 * 60));
-                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        const s = Math.floor((diff % (1000 * 60)) / 1000);
-                        el.innerText = `⏳ ${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                    if (res && res.status === 'ok') {
+                        updateBalance();
+                        // Показываем окно ввода данных
+                        document.getElementById('email-modal').style.display = 'block';
+                    } else {
+                        tg.showAlert("Ошибка: " + (res ? res.message : "Нет связи"));
                     }
                 }
             });
         }
 
-        // 5. ЛОГИКА ПОКУПКИ И ПОЛУЧЕНИЯ
-        function buyItem(id) {
-            const prod = products.find(p => p.id === id);
-            // Упрощенная проверка (в реальности - запрос на сервер)
-            if(user.coins >= prod.priceC) {
-                tg.showConfirm(`Списать ${prod.priceC} монет за ${prod.name}?`, (ok) => {
-                    if(ok) {
-                        user.coins -= prod.priceC;
-                        user.boughtItems.push(id);
-                        localStorage.setItem('shop_user', JSON.stringify(user));
-                        renderBalance();
-                        renderProducts(prod.gameId); // Перерисовать кнопку на "ПОЛУЧИТЬ"
-                    }
-                });
-            } else {
-                tg.showAlert('Недостаточно монет! Используй промокоды.');
+        function submitDelivery() {
+            const data = document.getElementById('delivery-data').value;
+            if(!data) return tg.showAlert("Введите данные!");
+
+            // Отправляем как сообщение в чат поддержки
+            apiRequest('/api/chat/send', 'POST', {
+                user_id: USER_ID,
+                sender: 'user',
+                text: `[АВТО] Оформлен заказ. Мои данные: ${data}`
+            });
+
+            document.getElementById('email-modal').style.display = 'none';
+            tg.showAlert("✅ Данные отправлены! Ожидайте сообщения от поддержки.");
+            
+            // Открываем чат
+            openChat();
+        }
+
+        // 5. ЧАТ
+        function openChat() {
+            document.getElementById('chat-modal').style.display = 'flex';
+            loadChat();
+            // Обновляем чат каждые 3 сек
+            if (!chatInterval) chatInterval = setInterval(loadChat, 3000);
+        }
+
+        function closeChat() {
+            document.getElementById('chat-modal').style.display = 'none';
+            if (chatInterval) {
+                clearInterval(chatInterval);
+                chatInterval = null;
             }
         }
 
-        function openGetModal(prodId) {
-            document.getElementById('email-modal').classList.add('active');
-        }
-
-        function submitEmail() {
-            const email = document.getElementById('user-email').value;
-            if(!email) return tg.showAlert('Введите Email');
-
-            // Анимация отправки
-            const btn = document.querySelector('#email-modal .btn-buy');
-            const originalText = btn.innerText;
-            btn.innerText = 'Проверка...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.disabled = false;
-                closeModal('email-modal');
-                tg.showAlert('Заявка принята! Ожидайте сообщения от поддержки.');
-                
-                // ЭМУЛЯЦИЯ: Через 5 секунд пишет поддержка
-                setTimeout(() => {
-                    showNotification("Здравствуйте! Я вижу ваш заказ. Готовы принять товар?");
-                    // Добавляем сообщение в историю
-                    chatHistory.push({ sender: 'support', text: 'Здравствуйте! Я вижу ваш заказ. Готовы принять товар?' });
-                    localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
-                }, 4000);
-
-            }, 2000);
-        }
-
-        // 6. ЧАТ СИСТЕМА
-        function showNotification(text) {
-            const notif = document.getElementById('notif-toast');
-            notif.querySelector('div div:last-child').innerText = text;
-            notif.classList.add('show');
-            tg.HapticFeedback.notificationOccurred('success');
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 5000);
-        }
-
-        function openChat() {
-            document.getElementById('notif-toast').classList.remove('show');
-            document.getElementById('chat-modal').classList.add('active');
-            renderChat();
-        }
-
-        function renderChat() {
+        async function loadChat() {
+            const msgs = await apiRequest(`/api/chat?user_id=${USER_ID}`);
             const box = document.getElementById('chat-box');
-            box.innerHTML = '';
-            chatHistory.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `msg ${msg.sender}`;
-                div.innerText = msg.text;
-                box.appendChild(div);
-            });
-            box.scrollTop = box.scrollHeight;
+            
+            if (msgs) {
+                box.innerHTML = '';
+                msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.sender}`;
+                    div.innerText = m.message;
+                    box.appendChild(div);
+                });
+            }
         }
 
-        function sendUserMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if(!text) return;
-            
-            chatHistory.push({ sender: 'user', text: text });
-            localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
-            input.value = '';
-            renderChat();
-        }
+            if (!text) return;
 
-        // 7. АДМИН ЛОГИКА
-        function openAdmin() { document.getElementById('admin-modal').classList.add('active'); }
-        
-        function switchTab(tabId) {
-            document.querySelectorAll('.admin-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            ['tab-products', 'tab-games', 'tab-users'].forEach(t => document.getElementById(t).style.display = 'none');
-            document.getElementById(tabId).style.display = 'block';
-        }
-
-        function admAddProduct() {
-            const gameId = document.getElementById('adm-game-select').value;
-            const name = document.getElementById('adm-name').value;
-            const priceC = document.getElementById('adm-price-c').value;
-            const priceR = document.getElementById('adm-price-r').value;
-            const img = document.getElementById('adm-img').value;
-            const isOffer = document.getElementById('adm-offer').checked;
-
-            if(name) {
-                products.push({
-                    id: Date.now(),
-                    gameId, name, priceC, priceR, img,
-                    isOffer,
-                    expires: isOffer ? Date.now() + 3600000 : 0 // +1 час
-                });
-                localStorage.setItem('shop_products', JSON.stringify(products));
-                tg.showAlert('Товар добавлен');
-                
-                // Если открыт этот раздел, обновим
-                const openGameTitle = document.getElementById('selected-game-title').innerText;
-                if(openGameTitle !== 'Товары') {
-                   // Можно вызвать перерисовку, если знаем ID, но проще юзеру перезайти
-                }
-            }
-        }
-
-        function loadGameData() {
-            const id = document.getElementById('adm-edit-game-id').value;
-            const game = games.find(g => g.id === id);
-            if(game) {
-                document.getElementById('adm-game-name').value = game.name;
-                document.getElementById('adm-game-img').value = game.img;
-            }
-        }
-
-        function admSaveGame() {
-            const id = document.getElementById('adm-edit-game-id').value;
-            const game = games.find(g => g.id === id);
-            game.name = document.getElementById('adm-game-name').value;
-            game.img = document.getElementById('adm-game-img').value;
-            localStorage.setItem('shop_games', JSON.stringify(games));
-            tg.showAlert('Сохранено! Перезагрузите приложение.');
-            renderGames();
-        }
-
-        // Админ пишет в чат от лица поддержки
-        function admOpenChat() {
-            // В рамках одного телефона мы просто открываем тот же чат
-            // Но добавим возможность писать как support
-            tg.showPopup({
-                title: 'Отправка сообщения',
-                message: 'Введите ответ пользователю:',
-                buttons: [{type: 'ok', id: 'send'}, {type: 'cancel'}]
-            }, (btn) => {
-                if(btn === 'send') {
-                    // Telegram WebApp не имеет встроенного prompt. 
-                    // Для демо просто отправим заготовку или надо делать input в админке.
-                    // Давай сделаем эмуляцию:
-                    const text = "Я на связи! Какой у вас вопрос?";
-                    chatHistory.push({ sender: 'support', text: text });
-                    localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
-                    tg.showAlert('Сообщение отправлено');
-                }
+            await apiRequest('/api/chat/send', 'POST', {
+                user_id: USER_ID,
+                sender: 'user',
+                text: text
             });
+
+            input.value = '';
+            loadChat(); // Сразу обновить
         }
 
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
+        // Запуск при старте
         init();
+
     </script>
 </body>
 </html>
