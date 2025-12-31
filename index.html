@@ -412,24 +412,28 @@
 
         // --- LOGIC: БЕЙДЖ НЕПРОЧИТАННЫХ ---
         async function checkUnreadMessages() {
-            // Если мы админ и не в чате с кем-то - бейдж не нужен (или можно сделать для CRM)
-            // Здесь логика для обычного юзера
-            if(isAdmin) return;
-
-            // Тянем сообщения
-            const msgs = await api(`/api/chat?user_id=${USER_ID}`);
+            // 1. УБРАЛИ ПРОВЕРКУ if(isAdmin), ЧТОБЫ ТЫ МОГ ТЕСТИТЬ НА СЕБЕ
+            
+            // 2. ДОБАВИЛИ &t=${Date.now()} ЧТОБЫ СБИТЬ КЭШ И ЗАСТАВИТЬ ТЕЛЕГРАМ ДЕЛАТЬ НОВЫЙ ЗАПРОС
+            const msgs = await api(`/api/chat?user_id=${USER_ID}&t=${Date.now()}`);
+            
             if(!msgs) return;
 
             // Считаем непрочитанные от support
             let unreadCount = 0;
             msgs.forEach(m => {
-                if(m.sender === 'support' && m.is_read === 0) unreadCount++;
+                // Если отправитель support И статус "не прочитано" (0)
+                if(m.sender === 'support' && m.is_read === 0) {
+                    unreadCount++;
+                }
             });
 
             const badge = document.getElementById('chat-badge');
             if(unreadCount > 0) {
                 badge.innerText = unreadCount;
                 badge.classList.add('show');
+                
+                // (Опционально) Вибрация, если количество изменилось (сложнее, пока пропустим)
             } else {
                 badge.classList.remove('show');
             }
