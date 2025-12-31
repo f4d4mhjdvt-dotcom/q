@@ -3,294 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Game Shop</title>
+    <title>Gems Shop Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
-            --accent: #ffb703; /* Желтый Brawl */
-            --accent-blue: #219ebc; /* Синий Clash */
+            --accent: #ffb703;
+            --blue: #219ebc;
+            --green: #2ecc71;
+            --red: #e63946;
             --text-main: #ffffff;
             --text-sec: #aaaaaa;
-            --green: #2ecc71;
+            --chat-bg-user: #007aff;
+            --chat-bg-support: #333;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            margin: 0; padding: 0; padding-bottom: 80px;
             -webkit-tap-highlight-color: transparent;
         }
 
         /* HEADER */
         .header {
-            position: sticky;
-            top: 0;
+            position: sticky; top: 0;
             background: rgba(18, 18, 18, 0.95);
             backdrop-filter: blur(10px);
             padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            border-bottom: 1px solid #333;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; border-bottom: 1px solid #333;
         }
-        .wallet {
-            display: flex;
-            gap: 15px;
-            font-weight: 700;
+        .wallet { font-weight: 700; font-size: 14px; display: flex; gap: 15px; }
+        
+        /* GENERAL UI */
+        .container { padding: 20px; }
+        h2 { margin: 10px 0 20px 0; font-size: 18px; }
+        
+        /* GAME CARDS */
+        .games-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .game-card {
+            background: var(--card-bg); border-radius: 16px;
+            height: 120px; position: relative; overflow: hidden;
+            border: 2px solid transparent; cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .game-card:active { transform: scale(0.97); }
+        .game-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .game-title {
+            position: absolute; bottom: 10px; left: 10px; right: 10px;
+            font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             font-size: 14px;
         }
-        .currency { display: flex; align-items: center; gap: 5px; }
 
-        /* CONTENT */
-        .container { padding: 20px; padding-bottom: 100px; }
-        
-        h2 { margin-top: 0; font-size: 20px; }
-
-        /* GAMES GRID */
-        .games-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .game-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-            border: 2px solid transparent;
-        }
-        .game-card:active { transform: scale(0.95); }
-        .game-card.selected { border-color: var(--accent); }
-        .game-icon {
-            width: 60px; height: 60px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            background-size: cover;
-        }
-
-        /* SLIDERS */
+        /* PRODUCTS SLIDER & OFFER */
         .slider-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 15px;
-            padding-bottom: 10px;
-            scrollbar-width: none; /* Firefox */
+            display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px;
+            scrollbar-width: none;
         }
         .slider-container::-webkit-scrollbar { display: none; }
         
         .item-card {
-            min-width: 140px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            min-width: 150px; background: var(--card-bg);
+            border-radius: 14px; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
             position: relative;
         }
-        .item-img { width: 80px; height: 80px; background: #333; border-radius: 50%; margin-bottom: 10px; }
-        .price-tag { font-size: 12px; color: var(--text-sec); margin-top: 5px; }
-        .buy-btn {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            margin-top: 10px;
-            width: 100%;
-            font-weight: 600;
-            cursor: pointer;
+        .item-card.special-offer { border: 1px solid var(--red); }
+        .offer-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: var(--red); color: white;
+            font-size: 10px; padding: 4px 8px; border-radius: 10px;
+            font-weight: bold; animation: pulse 2s infinite;
         }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        
+        .item-img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; background: #333; }
+        .timer { color: var(--red); font-size: 11px; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+
+        .btn {
+            width: 100%; padding: 10px; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; margin-top: auto; font-size: 13px;
+        }
+        .btn-buy { background: var(--blue); color: white; }
+        .btn-get { background: var(--accent); color: black; animation: pop 0.3s; }
+        @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
+
+        /* NOTIFICATIONS */
+        .notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid #444; border-radius: 50px;
+            padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; width: 85%; max-width: 350px;
+        }
+        .notification.show { transform: translateX(-50%) translateY(0); }
+        .notif-avatar { width: 35px; height: 35px; border-radius: 50%; background: #eee; object-fit: cover; }
 
         /* MODALS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            display: none; align-items: flex-end; /* Bottom sheet style */
         }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        
+        .modal-overlay.active { display: flex; }
         .modal-content {
-            background: #252525;
-            width: 85%;
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-            transform: translateY(20px);
-            transition: transform 0.3s;
+            background: #1c1c1e; width: 100%; border-radius: 20px 20px 0 0;
+            padding: 25px; box-sizing: border-box; animation: slideUp 0.3s;
+            max-height: 90vh; overflow-y: auto;
         }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* DAILY CHECK-IN */
-        .daily-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 20px 0;
-            overflow-x: auto;
+        /* CHAT UI */
+        .chat-header {
+            display: flex; align-items: center; gap: 10px; padding-bottom: 15px; border-bottom: 1px solid #333; margin-bottom: 15px;
         }
-        .day-box {
-            background: #333;
-            min-width: 40px;
-            height: 60px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-right: 5px;
-            font-size: 10px;
-            opacity: 0.5;
+        .support-badge { background: rgba(46, 204, 113, 0.2); color: var(--green); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; }
+        .chat-messages { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 15px; }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; }
+        .msg.support { align-self: flex-start; background: var(--chat-bg-support); color: white; border-bottom-left-radius: 4px; }
+        .msg.user { align-self: flex-end; background: var(--chat-bg-user); color: white; border-bottom-right-radius: 4px; }
+        .chat-input-area { display: flex; gap: 10px; border-top: 1px solid #333; padding-top: 15px; }
+        
+        /* ADMIN UI */
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
+        .tab-btn { background: #333; color: #fff; border:none; padding: 8px 12px; border-radius: 8px; font-size: 12px; white-space: nowrap; }
+        .tab-btn.active { background: var(--text-main); color: black; }
+        .admin-btn-float {
+            position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+            background: #e63946; border-radius: 50%; color: white; font-size: 24px;
+            display: none; justify-content: center; align-items: center; z-index: 90;
+            box-shadow: 0 4px 15px rgba(230,57,70,0.6); cursor: pointer;
         }
-        .day-box.active { background: var(--green); opacity: 1; color: #000; font-weight: bold; }
-        .day-box.current { border: 2px solid var(--accent); opacity: 1; }
+        input, select { background: #2c2c2e; border: 1px solid #444; color: white; width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
 
-        /* ROULETTE */
-        .wheel-container {
-            width: 250px; height: 250px;
-            margin: 0 auto 20px;
-            border-radius: 50%;
-            border: 5px solid #fff;
-            position: relative;
-            overflow: hidden;
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-            background: conic-gradient(
-                #ffb703 0deg 60deg, 
-                #fb8500 60deg 120deg, 
-                #ffb703 120deg 180deg, 
-                #fb8500 180deg 240deg, 
-                #ffb703 240deg 300deg, 
-                #fb8500 300deg 360deg
-            );
-        }
-        .wheel-pointer {
-            position: absolute; top: -10px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 20px solid white;
-            z-index: 2;
-        }
-        .wheel-item {
-            position: absolute;
-            width: 50%; height: 50%;
-            top: 50%; left: 50%;
-            transform-origin: 0 0;
-            text-align: right;
-            padding-right: 30px;
-            box-sizing: border-box;
-            font-weight: bold;
-            font-size: 14px;
-            line-height: 0;
-            color: #000;
-        }
-
-        /* ADMIN PANEL */
-        .admin-btn {
-            position: fixed; bottom: 20px; right: 20px;
-            background: #e63946; color: white;
-            width: 50px; height: 50px; border-radius: 50%;
-            display: none; justify-content: center; align-items: center;
-            font-size: 24px; box-shadow: 0 4px 12px rgba(230,57,70,0.5);
-            z-index: 90; cursor: pointer;
-        }
-        .admin-form input, .admin-form select {
-            width: 100%; margin-bottom: 10px; padding: 10px;
-            border-radius: 8px; border: none; background: #333; color: white;
-        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="wallet">
-            <div class="currency">🪙 <span id="balance-coins">0</span></div>
-            <div class="currency">₽ <span id="balance-rub">0</span></div>
+            <span>💎 <span id="bal-coins">0</span></span>
+            <span>₽ <span id="bal-rub">0</span></span>
         </div>
-        <div id="user-name">Guest</div>
+        <div id="user-status" style="font-size:12px; color:#aaa;">В сети</div>
     </div>
 
     <div class="container">
-        <h2>Выберите игру</h2>
-        <div class="games-grid" id="games-container">
-            </div>
+        <h2 id="games-head">Выберите игру</h2>
+        <div class="games-grid" id="games-container"></div>
 
         <div id="shop-section" style="display:none;">
-            <h2 id="selected-game-title">Товары</h2>
-            <div class="slider-container" id="products-container">
-                </div>
-        </div>
-
-        <div style="margin-top: 30px; background: #252525; padding: 15px; border-radius: 16px;">
-            <h3>Промокод</h3>
-            <p style="font-size: 12px; color: #aaa;">Введите код для монет или вращения колеса</p>
-            <input type="text" id="promo-input" placeholder="Код..." style="width: 100%; padding: 10px; border-radius: 8px; border:none; margin-bottom:10px; box-sizing:border-box;">
-            <button onclick="activatePromo()" style="width: 100%; padding: 10px; background: #fff; color: #000; border:none; border-radius: 8px; font-weight:bold;">Активировать</button>
-        </div>
-    </div>
-
-    <div id="admin-float-btn" class="admin-btn" onclick="openAdmin()">⚙️</div>
-
-    <div id="daily-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>📅 Ежедневная награда</h3>
-            <p>Забирай бонусы каждый день!</p>
-            <div class="daily-row" id="daily-days">
-                </div>
-            <button onclick="claimDaily()" id="claim-btn" style="width:100%; padding:15px; background:var(--green); border:none; border-radius:12px; color:#fff; font-weight:bold;">ЗАБРАТЬ</button>
-        </div>
-    </div>
-
-    <div id="roulette-modal" class="modal-overlay">
-        <div class="modal-content" style="background: #1a0b2e; border: 1px solid #ffb703;">
-            <h3 style="color: #ffb703;">🎰 КОЛЕСО ФОРТУНЫ</h3>
-            <div style="position: relative; padding-top: 20px;">
-                <div class="wheel-pointer"></div>
-                <div class="wheel-container" id="wheel">
-                    </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 id="selected-game-title">Товары</h2>
+                <button onclick="backToGames()" style="background:none; border:none; color:#aaa;">✕ Назад</button>
             </div>
-            <button onclick="spinWheel()" id="spin-btn" style="width:100%; padding:15px; background: #ffb703; border:none; border-radius:12px; color:#000; font-weight:bold; margin-top:15px;">КРУТИТЬ</button>
-            <button onclick="closeModal('roulette-modal')" style="background:transparent; color:#aaa; border:none; margin-top:10px;">Закрыть</button>
+            <div class="slider-container" id="products-container"></div>
+        </div>
+    </div>
+
+    <div id="admin-float" class="admin-btn-float" onclick="openAdmin()">⚙️</div>
+
+    <div id="notif-toast" class="notification" onclick="openChat()">
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" class="notif-avatar">
+        <div>
+            <div style="font-weight:bold; font-size:13px;">Вика К. <span style="color:var(--green)">[Support]</span></div>
+            <div style="font-size:12px; color:#ccc;">Новое сообщение...</div>
+        </div>
+    </div>
+
+    <div id="email-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>📦 Получение товара</h3>
+            <p style="color:#aaa; font-size:13px; margin-bottom:20px;">Введите ваш Supercell ID / Email для доставки.</p>
+            <input type="email" id="user-email" placeholder="name@example.com">
+            <button onclick="submitEmail()" class="btn btn-buy">Подтвердить</button>
+            <button onclick="closeModal('email-modal')" style="background:transparent; color:#aaa; width:100%; border:none; padding:10px;">Отмена</button>
+        </div>
+    </div>
+
+    <div id="chat-modal" class="modal-overlay" style="z-index: 2500;">
+        <div class="modal-content" style="height: 80vh;">
+            <div class="chat-header">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:40px; height:40px; border-radius:50%;">
+                <div>
+                    <div style="font-weight:bold;">Вика К. <span class="support-badge">ПОДДЕРЖКА</span></div>
+                    <div style="font-size:12px; color:var(--green);">Online</div>
+                </div>
+                <button onclick="closeModal('chat-modal')" style="margin-left:auto; background:none; border:none; color:#aaa; font-size:20px;">✕</button>
+            </div>
+            
+            <div class="chat-messages" id="chat-box"></div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Сообщение..." style="margin:0;">
+                <button onclick="sendUserMessage()" style="width:50px; background:var(--chat-bg-user); border:none; border-radius:8px; color:white;">➤</button>
+            </div>
         </div>
     </div>
 
     <div id="admin-modal" class="modal-overlay">
-        <div class="modal-content admin-form" style="text-align: left;">
-            <h3>⚙️ Админ Панель</h3>
+        <div class="modal-content" style="height: 85vh;">
+            <h3>🛠 Админ Панель</h3>
             
-            <h4>Добавить товар</h4>
-            <select id="adm-game-select"></select>
-            <input type="text" id="adm-name" placeholder="Название (напр. 30 Гемов)">
-            <input type="number" id="adm-price-c" placeholder="Цена в монетах">
-            <input type="number" id="adm-price-r" placeholder="Цена в рублях">
-            <button onclick="admAddProduct()" style="width:100%; padding:10px; background:blue; color:white; border:none; border-radius:8px;">Добавить товар</button>
-            
-            <hr style="border-color: #444; margin: 15px 0;">
-            
-            <h4>Генератор Промо</h4>
-            <select id="adm-promo-type">
-                <option value="coins">Монеты (+100)</option>
-                <option value="spin">Вращение колеса</option>
-            </select>
-            <input type="text" id="adm-code" placeholder="Код (напр. BONUS2025)">
-            <button onclick="admAddPromo()" style="width:100%; padding:10px; background:green; color:white; border:none; border-radius:8px;">Создать код</button>
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-products')">Товары</button>
+                <button class="tab-btn" onclick="switchTab('tab-games')">Игры</button>
+                <button class="tab-btn" onclick="switchTab('tab-users')">Юзеры / Чат</button>
+            </div>
 
-            <button onclick="closeModal('admin-modal')" style="width:100%; padding:10px; background:#444; color:white; border:none; border-radius:8px; margin-top:15px;">Закрыть</button>
+            <div id="tab-products">
+                <select id="adm-game-select"></select>
+                <input type="text" id="adm-name" placeholder="Название (30 Гемов)">
+                <input type="number" id="adm-price-c" placeholder="Цена (монеты)">
+                <input type="number" id="adm-price-r" placeholder="Цена (рубли)">
+                <input type="text" id="adm-img" placeholder="Ссылка на картинку товара">
+                
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    <input type="checkbox" id="adm-offer" style="width:20px;">
+                    <label>Спецпредложение (Таймер)</label>
+                </div>
+                
+                <button onclick="admAddProduct()" class="btn btn-buy" style="background:var(--green);">Создать товар</button>
+            </div>
+
+            <div id="tab-games" style="display:none;">
+                <p style="font-size:12px; color:#aaa;">Редактирование обложек игр</p>
+                <select id="adm-edit-game-id" onchange="loadGameData()">
+                    <option value="brawl">Brawl Stars</option>
+                    <option value="clash">Clash Royale</option>
+                </select>
+                <input type="text" id="adm-game-name" placeholder="Название раздела">
+                <input type="text" id="adm-game-img" placeholder="URL Обложки (Banner)">
+                <button onclick="admSaveGame()" class="btn btn-buy">Сохранить обложку</button>
+            </div>
+
+            <div id="tab-users" style="display:none;">
+                <p style="font-size:12px; color:#aaa;">Активные пользователи</p>
+                <div style="background:#2c2c2e; padding:10px; border-radius:8px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>@currentUser</strong>
+                        <span style="color:var(--green)">Online</span>
+                    </div>
+                    <div style="font-size:12px; color:#aaa; margin-top:5px;">ID: 123456789</div>
+                    <button onclick="admOpenChat()" style="width:100%; margin-top:10px; padding:8px; background:#444; border:none; color:white; border-radius:6px;">Написать от поддержки</button>
+                </div>
+            </div>
+
+            <button onclick="closeModal('admin-modal')" style="margin-top:20px; background:transparent; color:#aaa; border:none; width:100%;">Закрыть</button>
         </div>
     </div>
 
@@ -298,280 +262,308 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // === 1. НАСТРОЙКИ И ДАННЫЕ (База данных в памяти) ===
-        // ВАЖНО: Вставь сюда свой ID телеграм, чтобы видеть админку!
-        const ADMIN_ID = 947269219; // <--- ЗАМЕНИТЬ НА СВОЙ ID
-
-        // Начальные данные (если пользователь зашел первый раз)
-        const defaultData = {
-            coins: 0,
-            rubles: 0,
-            loginStreak: 0,
-            lastLoginDate: null,
-            inventory: [],
-            usedPromos: []
-        };
-
-        // Игры и товары (Может редактировать админ)
-        let games = [
-            { id: 'brawl', name: 'Brawl Stars', color: '#ffb703', icon: 'https://cdn-icons-png.flaticon.com/512/2696/2696047.png' },
-            { id: 'clash', name: 'Clash Royale', color: '#219ebc', icon: 'https://cdn-icons-png.flaticon.com/512/1198/1198270.png' }
-        ];
-
-        let products = [
-            { gameId: 'brawl', name: '30 Гемов', priceC: 50, priceR: 99, img: '' },
-            { gameId: 'brawl', name: 'Brawl Pass', priceC: 500, priceR: 899, img: '' },
-            { gameId: 'clash', name: '1000 Золота', priceC: 20, priceR: 49, img: '' },
-        ];
-
-        let promos = {
-            'START': { type: 'coins', val: 100 },
-            'SPIN': { type: 'spin', val: 1 }
-        };
-
-        // Загрузка данных юзера из LocalStorage (Память телефона)
-        let user = JSON.parse(localStorage.getItem('user_data')) || defaultData;
+        // 1. КОНФИГУРАЦИЯ
+        const ADMIN_ID = 947269219; // <-- ЗАМЕНИТЬ НА СВОЙ ID
         
-        // === 2. ИНИЦИАЛИЗАЦИЯ ===
-        function init() {
-            // Отображаем юзера
-            const tgUser = tg.initDataUnsafe.user;
-            document.getElementById('user-name').innerText = tgUser ? tgUser.first_name : 'Guest';
-            
-            // Проверка на админа
-            if (tgUser && tgUser.id === ADMIN_ID) {
-                document.getElementById('admin-float-btn').style.display = 'flex';
-            }
+        let user = JSON.parse(localStorage.getItem('shop_user')) || {
+            coins: 50, rubles: 0, boughtItems: [], id: tg.initDataUnsafe.user?.id || 0
+        };
 
+        // База данных (в памяти)
+        let games = JSON.parse(localStorage.getItem('shop_games')) || [
+            { id: 'brawl', name: 'Brawl Stars', img: 'https://wallpapers.com/images/hd/brawl-stars-loading-screen-background-p7m8f2z9j0k1q3w4.jpg' },
+            { id: 'clash', name: 'Clash Royale', img: 'https://images7.alphacoders.com/678/678122.jpg' }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('shop_products')) || [
+            { id: 1, gameId: 'brawl', name: '30 Гемов', priceC: 50, priceR: 99, img: 'https://cdn-icons-png.flaticon.com/512/2696/2696047.png', isOffer: false },
+            { id: 2, gameId: 'brawl', name: 'Mega Box', priceC: 150, priceR: 299, img: 'https://cdn-icons-png.flaticon.com/512/3062/3062634.png', isOffer: true, expires: Date.now() + 3600000 }
+        ];
+
+        let chatHistory = JSON.parse(localStorage.getItem('shop_chat')) || [
+            { sender: 'support', text: 'Здравствуйте! Если возникнут вопросы, я здесь.' }
+        ];
+
+        // 2. ИНИЦИАЛИЗАЦИЯ
+        function init() {
             renderBalance();
             renderGames();
-            checkDailyLogin();
-            initWheel();
+            
+            const tgUser = tg.initDataUnsafe.user;
+            if (tgUser && tgUser.id === ADMIN_ID) {
+                document.getElementById('admin-float').style.display = 'flex';
+            }
+            
+            // Запуск таймеров
+            setInterval(updateTimers, 1000);
         }
 
-        // === 3. РЕНДЕРИНГ ИНТЕРФЕЙСА ===
+        // 3. РЕНДЕРИНГ
         function renderBalance() {
-            document.getElementById('balance-coins').innerText = user.coins;
-            document.getElementById('balance-rub').innerText = user.rubles;
-            saveData();
+            document.getElementById('bal-coins').innerText = user.coins;
+            document.getElementById('bal-rub').innerText = user.rubles;
         }
 
         function renderGames() {
             const container = document.getElementById('games-container');
             container.innerHTML = '';
-            games.forEach(game => {
-                const el = document.createElement('div');
-                el.className = 'game-card';
-                // В реальном проекте используем реальные картинки
-                el.innerHTML = `
-                    <div class="game-icon" style="background-color: ${game.color}; margin: 0 auto 10px;"></div>
-                    <strong>${game.name}</strong>
-                `;
-                el.onclick = () => selectGame(game);
-                container.appendChild(el);
-            });
-            
-            // Обновляем селект в админке
             const admSelect = document.getElementById('adm-game-select');
             admSelect.innerHTML = '';
+
             games.forEach(g => {
+                // Карточка игры
+                container.innerHTML += `
+                    <div class="game-card" onclick="openGame('${g.id}')">
+                        <img src="${g.img}">
+                        <div class="game-title">${g.name}</div>
+                    </div>
+                `;
+                // Опция в админке
                 admSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
             });
         }
 
-        function selectGame(game) {
+        function openGame(gameId) {
+            const game = games.find(g => g.id === gameId);
+            document.getElementById('games-head').style.display = 'none';
+            document.getElementById('games-container').style.display = 'none';
             document.getElementById('shop-section').style.display = 'block';
             document.getElementById('selected-game-title').innerText = game.name;
-            document.getElementById('selected-game-title').style.color = game.color;
             
+            renderProducts(gameId);
+        }
+
+        function backToGames() {
+            document.getElementById('games-head').style.display = 'block';
+            document.getElementById('games-container').style.display = 'grid';
+            document.getElementById('shop-section').style.display = 'none';
+        }
+
+        function renderProducts(gameId) {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
-
-            const gameProducts = products.filter(p => p.gameId === game.id);
             
-            if(gameProducts.length === 0) {
-                container.innerHTML = '<p style="color:#666;">Товаров пока нет</p>';
-                return;
-            }
-
-            gameProducts.forEach(prod => {
-                const el = document.createElement('div');
-                el.className = 'item-card';
-                el.innerHTML = `
-                    <div class="item-img"></div>
-                    <strong>${prod.name}</strong>
-                    <div class="price-tag">${prod.priceC} 🪙 / ${prod.priceR} ₽</div>
-                    <button class="buy-btn" onclick="buyItem('${prod.name}', ${prod.priceC})">Купить</button>
-                `;
-                container.appendChild(el);
-            });
+            const items = products.filter(p => p.gameId === gameId);
             
-            // Плавный скролл к товарам
-            document.getElementById('shop-section').scrollIntoView({behavior: "smooth"});
-        }
+            items.forEach(p => {
+                let btnHtml = '';
+                // Проверяем, куплен ли товар (статус "paid" для этого товара в сессии)
+                const isPaid = user.boughtItems.includes(p.id);
 
-        // === 4. ЕЖЕДНЕВНЫЙ БОНУС ===
-        function checkDailyLogin() {
-            const today = new Date().toDateString();
-            if (user.lastLoginDate !== today) {
-                // Показываем окно
-                openModal('daily-modal');
-                renderDailyGrid();
-            }
-        }
-
-        function renderDailyGrid() {
-            const container = document.getElementById('daily-days');
-            container.innerHTML = '';
-            for (let i = 1; i <= 7; i++) {
-                const el = document.createElement('div');
-                el.className = `day-box ${i <= user.loginStreak ? 'active' : ''} ${i === user.loginStreak + 1 ? 'current' : ''}`;
-                el.innerHTML = `<span>Day</span><span>${i}</span>`;
-                if(i === 7) el.innerHTML += `<span style="font-size:8px">BIG</span>`;
-                container.appendChild(el);
-            }
-        }
-
-        function claimDaily() {
-            const today = new Date().toDateString();
-            user.lastLoginDate = today;
-            user.loginStreak = (user.loginStreak % 7) + 1;
-            
-            // Награда
-            const reward = 5 * user.loginStreak; // Прогрессивная награда
-            user.coins += reward;
-            
-            tg.showAlert(`Вы получили ${reward} монет!`);
-            renderBalance();
-            closeModal('daily-modal');
-        }
-
-        // === 5. РУЛЕТКА И ПРОМО ===
-        function activatePromo() {
-            const code = document.getElementById('promo-input').value.trim();
-            if (user.usedPromos.includes(code)) {
-                tg.showAlert('Вы уже использовали этот код!');
-                return;
-            }
-            
-            if (promos[code]) {
-                const reward = promos[code];
-                user.usedPromos.push(code);
-                
-                if (reward.type === 'coins') {
-                    user.coins += reward.val;
-                    tg.showAlert(`Промокод принят! +${reward.val} монет`);
-                    renderBalance();
-                } else if (reward.type === 'spin') {
-                    openModal('roulette-modal');
+                if (isPaid) {
+                    btnHtml = `<button class="btn btn-get" onclick="openGetModal(${p.id})">ПОЛУЧИТЬ</button>`;
+                } else {
+                    btnHtml = `<button class="btn btn-buy" onclick="buyItem(${p.id})">Купить</button>`;
                 }
-            } else {
-                tg.showAlert('Неверный код');
-            }
+
+                let offerHtml = '';
+                let timerHtml = '';
+                if(p.isOffer) {
+                    offerHtml = `<div class="offer-badge">SALE</div>`;
+                    timerHtml = `<div class="timer" id="timer-${p.id}">⏳ 00:00:00</div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="item-card ${p.isOffer ? 'special-offer' : ''}">
+                        ${offerHtml}
+                        <img src="${p.img}" class="item-img" onerror="this.src='https://via.placeholder.com/100'">
+                        <div style="font-weight:bold; font-size:14px; text-align:center;">${p.name}</div>
+                        ${timerHtml}
+                        <div style="font-size:12px; color:#aaa; margin:5px 0;">${p.priceC} 🪙 / ${p.priceR} ₽</div>
+                        ${btnHtml}
+                    </div>
+                `;
+            });
+            updateTimers(); // Сразу обновить цифры
         }
 
-        function initWheel() {
-            const wheel = document.getElementById('wheel');
-            const prizes = [10, 50, 20, 100, 5, 200]; // 6 секторов
-            
-            prizes.forEach((p, i) => {
-                const el = document.createElement('div');
-                el.className = 'wheel-item';
-                el.style.transform = `rotate(${i * 60}deg)`; // 360 / 6 = 60
-                el.innerText = p;
-                wheel.appendChild(el);
+        // 4. ТАЙМЕРЫ
+        function updateTimers() {
+            const now = Date.now();
+            products.forEach(p => {
+                if(p.isOffer && p.expires > now) {
+                    const el = document.getElementById(`timer-${p.id}`);
+                    if(el) {
+                        const diff = p.expires - now;
+                        const h = Math.floor(diff / (1000 * 60 * 60));
+                        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((diff % (1000 * 60)) / 1000);
+                        el.innerText = `⏳ ${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                    }
+                }
             });
         }
 
-        function spinWheel() {
-            const btn = document.getElementById('spin-btn');
-            const wheel = document.getElementById('wheel');
-            
-            if(btn.disabled) return;
-            btn.disabled = true;
-
-            // Расчет вращения (минимум 5 оборотов + рандом)
-            const sectorAngle = 60;
-            const randomSector = Math.floor(Math.random() * 6);
-            const extraDeg = 360 * 5 + (360 - (randomSector * sectorAngle)); 
-            
-            wheel.style.transform = `rotate(${extraDeg}deg)`;
-
-            // Результат
-            const prizes = [10, 50, 20, 100, 5, 200];
-            const win = prizes[randomSector]; // Упрощенная логика (надо согласовать с градусами)
-
-            setTimeout(() => {
-                tg.showAlert(`Вы выиграли ${win} гемов! (Условно, начислено в монеты)`);
-                user.coins += win;
-                renderBalance();
-                btn.disabled = false;
-                closeModal('roulette-modal');
-                // Сброс колеса для красоты можно делать, но сложно без сбоя анимации
-            }, 4000);
-        }
-
-        // === 6. ЛОГИКА ПОКУПКИ ===
-        function buyItem(name, price) {
-            if(user.coins >= price) {
-                tg.showConfirm(`Купить ${name} за ${price} монет?`, (ok) => {
+        // 5. ЛОГИКА ПОКУПКИ И ПОЛУЧЕНИЯ
+        function buyItem(id) {
+            const prod = products.find(p => p.id === id);
+            // Упрощенная проверка (в реальности - запрос на сервер)
+            if(user.coins >= prod.priceC) {
+                tg.showConfirm(`Списать ${prod.priceC} монет за ${prod.name}?`, (ok) => {
                     if(ok) {
-                        user.coins -= price;
-                        // Тут переход к оформлению заказа из прошлого кода
-                        // Для примера просто спишем:
+                        user.coins -= prod.priceC;
+                        user.boughtItems.push(id);
+                        localStorage.setItem('shop_user', JSON.stringify(user));
                         renderBalance();
-                        tg.showAlert('Успешно! Свяжитесь с поддержкой для получения.');
-                        // Здесь можно открыть chat админа
+                        renderProducts(prod.gameId); // Перерисовать кнопку на "ПОЛУЧИТЬ"
                     }
                 });
             } else {
-                tg.showAlert('Недостаточно монет! Пополните баланс.');
+                tg.showAlert('Недостаточно монет! Используй промокоды.');
             }
         }
 
-        // === 7. АДМИН ПАНЕЛЬ ===
-        function openAdmin() { openModal('admin-modal'); }
+        function openGetModal(prodId) {
+            document.getElementById('email-modal').classList.add('active');
+        }
+
+        function submitEmail() {
+            const email = document.getElementById('user-email').value;
+            if(!email) return tg.showAlert('Введите Email');
+
+            // Анимация отправки
+            const btn = document.querySelector('#email-modal .btn-buy');
+            const originalText = btn.innerText;
+            btn.innerText = 'Проверка...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                closeModal('email-modal');
+                tg.showAlert('Заявка принята! Ожидайте сообщения от поддержки.');
+                
+                // ЭМУЛЯЦИЯ: Через 5 секунд пишет поддержка
+                setTimeout(() => {
+                    showNotification("Здравствуйте! Я вижу ваш заказ. Готовы принять товар?");
+                    // Добавляем сообщение в историю
+                    chatHistory.push({ sender: 'support', text: 'Здравствуйте! Я вижу ваш заказ. Готовы принять товар?' });
+                    localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
+                }, 4000);
+
+            }, 2000);
+        }
+
+        // 6. ЧАТ СИСТЕМА
+        function showNotification(text) {
+            const notif = document.getElementById('notif-toast');
+            notif.querySelector('div div:last-child').innerText = text;
+            notif.classList.add('show');
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 5000);
+        }
+
+        function openChat() {
+            document.getElementById('notif-toast').classList.remove('show');
+            document.getElementById('chat-modal').classList.add('active');
+            renderChat();
+        }
+
+        function renderChat() {
+            const box = document.getElementById('chat-box');
+            box.innerHTML = '';
+            chatHistory.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `msg ${msg.sender}`;
+                div.innerText = msg.text;
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendUserMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            chatHistory.push({ sender: 'user', text: text });
+            localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
+            input.value = '';
+            renderChat();
+        }
+
+        // 7. АДМИН ЛОГИКА
+        function openAdmin() { document.getElementById('admin-modal').classList.add('active'); }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.admin-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            ['tab-products', 'tab-games', 'tab-users'].forEach(t => document.getElementById(t).style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+        }
 
         function admAddProduct() {
             const gameId = document.getElementById('adm-game-select').value;
             const name = document.getElementById('adm-name').value;
-            const priceC = parseInt(document.getElementById('adm-price-c').value);
-            const priceR = parseInt(document.getElementById('adm-price-r').value);
+            const priceC = document.getElementById('adm-price-c').value;
+            const priceR = document.getElementById('adm-price-r').value;
+            const img = document.getElementById('adm-img').value;
+            const isOffer = document.getElementById('adm-offer').checked;
 
-            if(name && priceC) {
-                products.push({ gameId, name, priceC, priceR, img: '' });
-                tg.showAlert('Товар добавлен!');
-                // Обновляем интерфейс
-                if(document.getElementById('selected-game-title').innerText) {
-                    const activeGame = games.find(g => g.id === gameId);
-                    if(activeGame) selectGame(activeGame);
+            if(name) {
+                products.push({
+                    id: Date.now(),
+                    gameId, name, priceC, priceR, img,
+                    isOffer,
+                    expires: isOffer ? Date.now() + 3600000 : 0 // +1 час
+                });
+                localStorage.setItem('shop_products', JSON.stringify(products));
+                tg.showAlert('Товар добавлен');
+                
+                // Если открыт этот раздел, обновим
+                const openGameTitle = document.getElementById('selected-game-title').innerText;
+                if(openGameTitle !== 'Товары') {
+                   // Можно вызвать перерисовку, если знаем ID, но проще юзеру перезайти
                 }
             }
         }
 
-        function admAddPromo() {
-            const type = document.getElementById('adm-promo-type').value;
-            const code = document.getElementById('adm-code').value;
-            if(code) {
-                promos[code] = { type: type, val: (type === 'coins' ? 100 : 1) };
-                tg.showAlert(`Код ${code} создан!`);
+        function loadGameData() {
+            const id = document.getElementById('adm-edit-game-id').value;
+            const game = games.find(g => g.id === id);
+            if(game) {
+                document.getElementById('adm-game-name').value = game.name;
+                document.getElementById('adm-game-img').value = game.img;
             }
         }
 
-        // === ВСПОМОГАТЕЛЬНЫЕ ===
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-        }
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-        function saveData() {
-            localStorage.setItem('user_data', JSON.stringify(user));
+        function admSaveGame() {
+            const id = document.getElementById('adm-edit-game-id').value;
+            const game = games.find(g => g.id === id);
+            game.name = document.getElementById('adm-game-name').value;
+            game.img = document.getElementById('adm-game-img').value;
+            localStorage.setItem('shop_games', JSON.stringify(games));
+            tg.showAlert('Сохранено! Перезагрузите приложение.');
+            renderGames();
         }
 
-        // Запуск
+        // Админ пишет в чат от лица поддержки
+        function admOpenChat() {
+            // В рамках одного телефона мы просто открываем тот же чат
+            // Но добавим возможность писать как support
+            tg.showPopup({
+                title: 'Отправка сообщения',
+                message: 'Введите ответ пользователю:',
+                buttons: [{type: 'ok', id: 'send'}, {type: 'cancel'}]
+            }, (btn) => {
+                if(btn === 'send') {
+                    // Telegram WebApp не имеет встроенного prompt. 
+                    // Для демо просто отправим заготовку или надо делать input в админке.
+                    // Давай сделаем эмуляцию:
+                    const text = "Я на связи! Какой у вас вопрос?";
+                    chatHistory.push({ sender: 'support', text: text });
+                    localStorage.setItem('shop_chat', JSON.stringify(chatHistory));
+                    tg.showAlert('Сообщение отправлено');
+                }
+            });
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
         init();
-
     </script>
 </body>
 </html>
