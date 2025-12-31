@@ -191,15 +191,26 @@
             try {
                 const options = {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        // ВОТ ЭТА МАГИЧЕСКАЯ СТРОЧКА НИЖЕ РЕШАЕТ ПРОБЛЕМУ:
+                        'ngrok-skip-browser-warning': 'true' 
+                    }
                 };
                 if (body) options.body = JSON.stringify(body);
                 
                 const response = await fetch(`${BASE_URL}${endpoint}`, options);
+                
+                // Проверяем, что ответ успешный
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 return await response.json();
             } catch (error) {
                 console.error("API Error:", error);
-                tg.showAlert("Ошибка соединения с сервером. Проверьте Ngrok.");
+                // Можно временно вывести саму ошибку в алерт, чтобы видеть детали
+                tg.showAlert("Ошибка: " + error.message); 
                 return null;
             }
         }
