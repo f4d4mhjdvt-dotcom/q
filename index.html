@@ -86,6 +86,7 @@
         .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; }
         .msg.user { align-self: flex-end; background: var(--chat-user); }
         .msg.support { align-self: flex-start; background: var(--chat-support); }
+        .msg.system { align-self: center; background: transparent; color: #888; font-size: 12px; font-style: italic; }
         
         .chat-input { display: flex; gap: 10px; margin-top: auto; }
         .chat-input input {
@@ -143,14 +144,23 @@
     <div id="modal-chat" class="modal">
         <div class="modal-content" style="display:flex; flex-direction:column;">
             <div class="chat-header">
-                <div style="width:40px; height:40px; background:#ddd; border-radius:50%; background-image:url('https://cdn-icons-png.flaticon.com/512/4140/4140048.png'); background-size:cover;"></div>
-                <div>
+                <div style="width:40px; height:40px; background:#ddd; border-radius:50%; overflow:hidden;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div id="support-info" style="display:none;">
                     <div style="font-weight:bold;">Вика К. <span class="support-tag">ПОДДЕРЖКА</span></div>
                     <div style="font-size:12px; color:var(--green)">Online</div>
                 </div>
+                <div id="support-loading" style="display:block;">
+                    <div style="font-weight:bold;">Чат поддержки</div>
+                    <div style="font-size:12px; color:#aaa;">Ожидание...</div>
+                </div>
+
                 <button onclick="closeModal('modal-chat')" style="margin-left:auto; background:none; border:none; color:#aaa; font-size:20px;">✕</button>
             </div>
+            
             <div id="chat-messages" class="chat-box"></div>
+            
             <div class="chat-input">
                 <input type="text" id="chat-in" placeholder="Сообщение...">
                 <button onclick="sendMsg()" style="background:var(--chat-user); border:none; color:white; width:40px; border-radius:8px;">➤</button>
@@ -177,7 +187,6 @@
 
             <div class="tab-nav">
                 <button class="tab-btn active" onclick="switchTab('adm-products')">Товары</button>
-                <button class="tab-btn" onclick="switchTab('adm-games')">Игры</button>
                 <button class="tab-btn" onclick="switchTab('adm-crm')">CRM (Юзеры)</button>
             </div>
 
@@ -193,14 +202,8 @@
                 <button onclick="admAddProduct()" class="btn btn-buy">Создать товар</button>
             </div>
 
-            <div id="adm-games" style="display:none;">
-                <select id="adm-g-select" class="form-input" onchange="admLoadGame()"></select>
-                <input id="adm-g-name" class="form-input" placeholder="Название игры">
-                <input id="adm-g-img" class="form-input" placeholder="Ссылка на обложку">
-                <button onclick="admUpdateGame()" class="btn btn-buy">Сохранить обложку</button>
-            </div>
-
             <div id="adm-crm" style="display:none;">
+                <button onclick="loadCrm()" style="width:100%; padding:10px; background:#444; border:none; color:white; border-radius:8px; margin-bottom:10px;">🔄 Обновить список</button>
                 <div id="crm-list"></div>
             </div>
         </div>
@@ -210,7 +213,7 @@
         <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:35px; height:35px; border-radius:50%;">
         <div>
             <div style="font-weight:bold; font-size:13px;">Вика К. <span style="color:var(--green)">[Support]</span></div>
-            <div style="font-size:12px; color:#ccc;">Ваш заказ принят в работу!</div>
+            <div style="font-size:12px; color:#ccc;">Новое сообщение</div>
         </div>
     </div>
 
@@ -220,18 +223,31 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️ ЗАМЕНИ НА СВОЙ NGROK (БЕЗ СЛЕША В КОНЦЕ)
+        // ⚠️ ЗАМЕНИ НА СВОЙ АКТУАЛЬНЫЙ NGROK
         const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev";
 
-        let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 947269219; // ТЕСТ ID
-        const USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "User";
+        // ЛОГИКА ID: Если нет телеграм ID (браузер/гость), генерируем случайный и сохраняем
+        let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
+        let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Гость";
+
+        if (!USER_ID) {
+            let storedId = localStorage.getItem('guest_user_id');
+            if (!storedId) {
+                storedId = Math.floor(Math.random() * 1000000000); // Генерируем ID
+                localStorage.setItem('guest_user_id', storedId);
+            }
+            USER_ID = parseInt(storedId);
+        }
+
+        const ADMIN_ID_CONST = 947269219; // Твой ID
         
         let allGames = [];
         let allProducts = [];
-        let purchasedItems = []; // Храним ID купленных товаров в сессии
-        let currentChatUserId = USER_ID; // С кем сейчас чат (для админа важно)
+        let purchasedItems = [];
+        let currentChatUserId = USER_ID;
         let isAdmin = false;
         let chatInterval = null;
+        let isSupportConnected = false; // Флаг: подключена ли Вика
 
         // --- API CORE ---
         async function api(endpoint, method='GET', body=null) {
@@ -250,7 +266,7 @@
 
         // --- INITIALIZATION ---
         async function init() {
-            // 1. Get User Data
+            // Регистрация юзера (даже гостя)
             const uData = await api('/api/user', 'POST', {user_id: USER_ID, username: USERNAME});
             if(uData) {
                 document.getElementById('bal-c').innerText = uData.coins;
@@ -263,7 +279,6 @@
                 }
             }
 
-            // 2. Load Content
             const data = await api('/api/data');
             if(data) {
                 allGames = data.games;
@@ -272,14 +287,11 @@
             }
         }
 
-        // --- GAMES & PRODUCTS UI ---
         function renderGames() {
             const cont = document.getElementById('games-container');
             cont.innerHTML = '';
-            // Админка: селекты
-            const admG = document.getElementById('adm-g-select');
             const admP = document.getElementById('adm-p-game');
-            admG.innerHTML = ''; admP.innerHTML = '';
+            admP.innerHTML = '';
 
             allGames.forEach(g => {
                 cont.innerHTML += `
@@ -287,12 +299,8 @@
                         <img src="${g.img}">
                         <div class="game-title">${g.name}</div>
                     </div>`;
-                
-                // Populate Admin Selects
-                const opt = `<option value="${g.id}">${g.name}</option>`;
-                admG.innerHTML += opt; admP.innerHTML += opt;
+                admP.innerHTML += `<option value="${g.id}">${g.name}</option>`;
             });
-            if(isAdmin) admLoadGame();
         }
 
         function openGame(gid) {
@@ -318,7 +326,6 @@
                         <img src="${p.img}" class="item-img" onerror="this.src='https://placehold.co/100'">
                         <div style="font-weight:bold; font-size:13px;">${p.name}</div>
                         <div style="font-size:11px; color:#aaa; margin-bottom:5px;">${p.price_c} 💎 / ${p.price_r} ₽</div>
-                        ${p.is_offer ? '<div style="font-size:10px; color:var(--red); font-weight:bold;">⏳ 59:00</div>' : ''}
                         ${btnHtml}
                     </div>`;
             });
@@ -329,7 +336,6 @@
             document.getElementById('screen-home').style.display = 'block';
         }
 
-        // --- PURCHASE FLOW ---
         async function buyItem(pid, price) {
             tg.showConfirm(`Списать ${price} монет?`, async (ok) => {
                 if(ok) {
@@ -337,7 +343,6 @@
                     if(res && res.status === 'ok') {
                         document.getElementById('bal-c').innerText = res.new_balance;
                         purchasedItems.push(pid);
-                        // Re-render to show "GET" button
                         const gTitle = document.getElementById('game-title').innerText;
                         const g = allGames.find(x => x.name === gTitle);
                         if(g) openGame(g.id);
@@ -348,34 +353,50 @@
             });
         }
 
-        function openGetModal(pid) {
-            document.getElementById('modal-email').style.display = 'flex';
-        }
+        function openGetModal(pid) { document.getElementById('modal-email').style.display = 'flex'; }
 
         async function submitEmail() {
             const val = document.getElementById('email-in').value;
             if(!val) return tg.showAlert("Введите данные!");
             
-            // Send data as chat message
             await api('/api/chat/send', 'POST', {user_id: USER_ID, sender: 'user', text: `[ЗАКАЗ] Данные: ${val}`});
-            
             document.getElementById('modal-email').style.display = 'none';
-            tg.showAlert("Данные отправлены! Ждите уведомления.");
             
-            // FAKE DELAY & NOTIFICATION
-            setTimeout(() => {
-                document.getElementById('notif-toast').classList.add('show');
-                tg.HapticFeedback.notificationOccurred('success');
-                setTimeout(() => document.getElementById('notif-toast').classList.remove('show'), 5000);
-            }, 3000);
+            // Запускаем сценарий чата
+            openChat(USER_ID); 
         }
 
-        // --- CHAT SYSTEM ---
+        // --- CHAT SYSTEM & SUPPORT SIMULATION ---
         function openChat(targetUid) {
             currentChatUserId = targetUid || USER_ID;
             document.getElementById('modal-chat').style.display = 'flex';
+            
+            // Если чат открыл админ - сразу Вика
+            if (isAdmin) {
+                showSupportHeader(true);
+            } else {
+                // Если юзер - проверяем, была ли история
+                checkSupportStatus();
+            }
+
             loadChat();
             if(!chatInterval) chatInterval = setInterval(loadChat, 2000);
+        }
+
+        function checkSupportStatus() {
+            // Если это обычный юзер, при открытии чата - состояние "Поиск"
+            showSupportHeader(false);
+            // Вика подключится только после отправки сообщения
+        }
+
+        function showSupportHeader(connected) {
+            if (connected) {
+                document.getElementById('support-info').style.display = 'block';
+                document.getElementById('support-loading').style.display = 'none';
+            } else {
+                document.getElementById('support-info').style.display = 'none';
+                document.getElementById('support-loading').style.display = 'block';
+            }
         }
         
         function closeModal(id) { 
@@ -386,13 +407,23 @@
         async function loadChat() {
             const msgs = await api(`/api/chat?user_id=${currentChatUserId}`);
             const box = document.getElementById('chat-messages');
+            const wasEmpty = box.innerHTML === '';
+            
             box.innerHTML = '';
-            if(msgs) msgs.forEach(m => {
-                const div = document.createElement('div');
-                div.className = `msg ${m.sender}`;
-                div.innerText = m.message;
-                box.appendChild(div);
-            });
+            if(msgs && msgs.length > 0) {
+                // Если есть сообщения от support - значит Вика уже подключена
+                const hasSupportMsg = msgs.some(m => m.sender === 'support');
+                if (hasSupportMsg) showSupportHeader(true);
+
+                msgs.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `msg ${m.sender}`;
+                    div.innerText = m.message;
+                    box.appendChild(div);
+                });
+            }
+            // Скролл вниз
+            if (wasEmpty) box.scrollTop = box.scrollHeight;
         }
 
         async function sendMsg() {
@@ -400,22 +431,61 @@
             const txt = inp.value.trim();
             if(!txt) return;
             
-            // Если я админ и пишу другому, то sender='support', иначе 'user'
             const sender = (isAdmin && currentChatUserId !== USER_ID) ? 'support' : 'user';
             
+            // 1. Отправляем сообщение юзера
             await api('/api/chat/send', 'POST', {user_id: currentChatUserId, sender, text: txt});
             inp.value = '';
             loadChat();
+
+            // 2. СЦЕНАРИЙ "ВИКА К." (Только если пишет обычный юзер)
+            if (!isAdmin && sender === 'user') {
+                const box = document.getElementById('chat-messages');
+                
+                // Проверяем, подключена ли уже Вика. Если нет - запускаем шоу.
+                // (Простая проверка: смотрим, горит ли зеленый статус)
+                const isOnline = document.getElementById('support-info').style.display === 'block';
+
+                if (!isOnline) {
+                    // А. Показываем "Поиск агента"
+                    const sysDiv = document.createElement('div');
+                    sysDiv.className = 'msg system';
+                    sysDiv.id = 'temp-searching';
+                    sysDiv.innerText = '🔍 Поиск свободного агента поддержки...';
+                    box.appendChild(sysDiv);
+                    box.scrollTop = box.scrollHeight;
+
+                    // Б. Ждем 4 секунды
+                    setTimeout(async () => {
+                        // Удаляем "Поиск"
+                        const el = document.getElementById('temp-searching');
+                        if(el) el.remove();
+
+                        // Включаем плашку Вики
+                        showSupportHeader(true);
+
+                        // Вика пишет приветствие (сохраняем в БД, как будто ответил админ)
+                        await api('/api/chat/send', 'POST', {
+                            user_id: USER_ID, 
+                            sender: 'support', 
+                            text: '👋 Здравствуйте! Меня зовут Вика. Чем могу помочь?'
+                        });
+                        loadChat(); // Подгружаем это сообщение
+                        
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }, 4000);
+                }
+            }
         }
 
         // --- ADMIN PANEL ---
         function openAdmin() { 
             document.getElementById('modal-admin').style.display = 'flex'; 
-            switchTab('adm-products'); // Default tab
+            switchTab('adm-products');
         }
 
         function switchTab(id) {
-            ['adm-products','adm-games','adm-crm'].forEach(t => document.getElementById(t).style.display='none');
+            ['adm-products','adm-crm'].forEach(t => document.getElementById(t).style.display='none');
             document.getElementById(id).style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
@@ -423,7 +493,6 @@
             if(id === 'adm-crm') loadCrm();
         }
 
-        // Admin: Add Product
         async function admAddProduct() {
             const body = {
                 gameId: document.getElementById('adm-p-game').value,
@@ -434,33 +503,18 @@
                 isOffer: document.getElementById('adm-p-offer').checked
             };
             const res = await api('/api/admin/add_product', 'POST', body);
-            if(res) { tg.showAlert("Товар создан!"); init(); } // reload content
+            if(res) { tg.showAlert("Товар создан!"); }
         }
 
-        // Admin: Edit Game
-        function admLoadGame() {
-            const gid = document.getElementById('adm-g-select').value;
-            const g = allGames.find(x => x.id === gid);
-            document.getElementById('adm-g-name').value = g.name;
-            document.getElementById('adm-g-img').value = g.img;
-        }
-
-        async function admUpdateGame() {
-            const body = {
-                id: document.getElementById('adm-g-select').value,
-                name: document.getElementById('adm-g-name').value,
-                img: document.getElementById('adm-g-img').value
-            };
-            const res = await api('/api/admin/update_game', 'POST', body);
-            if(res) { tg.showAlert("Обложка обновлена!"); init(); }
-        }
-
-        // Admin: CRM
         async function loadCrm() {
             const users = await api('/api/admin/users');
             const cont = document.getElementById('crm-list');
             cont.innerHTML = '';
+            
             if(users) users.forEach(u => {
+                // Не показываем самого админа в списке, чтобы не путаться
+                if (u.user_id === ADMIN_ID_CONST) return; 
+
                 cont.innerHTML += `
                     <div class="user-row">
                         <div>
@@ -470,6 +524,8 @@
                         <button onclick="adminStartChat(${u.user_id})" style="background:#444; border:none; color:white; padding:5px 10px; border-radius:5px;">Чат</button>
                     </div>`;
             });
+            
+            if(cont.innerHTML === '') cont.innerHTML = '<p style="color:#666; text-align:center">Нет пользователей</p>';
         }
 
         function adminStartChat(uid) {
