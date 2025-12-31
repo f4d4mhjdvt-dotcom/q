@@ -464,21 +464,66 @@
             if (wasEmpty) box.scrollTop = box.scrollHeight;
         }
 
-        // --- FILE UPLOAD LOGIC ---
+        // --- НОВАЯ ЛОГИКА ЗАГРУЗКИ ФОТО ---
+        
         function handleFileSelect() {
             const file = document.getElementById('file-in').files[0];
-            if(file) {
-                // Confirm sending image
-                if(confirm("Отправить изображение?")) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const base64 = e.target.result;
-                        sendMsg(base64);
-                    };
-                    reader.readAsDataURL(file);
+            if (!file) return;
+
+            // Сразу показываем, что процесс пошел
+            const btn = document.querySelector('.attach-btn');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳'; 
+
+            // Сжимаем и отправляем
+            resizeAndSend(file, (base64) => {
+                sendMsg(base64);
+                // Возвращаем кнопку обратно
+                btn.innerText = '📎';
+                document.getElementById('file-in').value = ''; // Чистим инпут
+            });
+        }
+
+        // Функция сжатия картинки (Magic!)
+        function resizeAndSend(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function() {
+                    // Создаем холст для рисовки
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Сжимаем до 800px ширины
+                    const MAX_HEIGHT = 800;
+                    
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Вычисляем новые размеры
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Рисуем уменьшенную картинку
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Получаем строку Base64 (качество 0.7 = 70%)
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    callback(dataUrl);
                 }
-                // Clear input
-                document.getElementById('file-in').value = '';
             }
         }
 
