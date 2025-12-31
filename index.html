@@ -2,260 +2,576 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gems Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Shop</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #1c1c1e);
-            color: var(--tg-theme-text-color, #ffffff);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent: #ffb703; /* Желтый Brawl */
+            --accent-blue: #219ebc; /* Синий Clash */
+            --text-main: #ffffff;
+            --text-sec: #aaaaaa;
+            --green: #2ecc71;
         }
 
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HEADER */
         .header {
-            width: 100%;
+            position: sticky;
+            top: 0;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        .wallet {
+            display: flex;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .currency { display: flex; align-items: center; gap: 5px; }
+
+        /* CONTENT */
+        .container { padding: 20px; padding-bottom: 100px; }
+        
+        h2 { margin-top: 0; font-size: 20px; }
+
+        /* GAMES GRID */
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             margin-bottom: 30px;
         }
-
-        .balance-box {
-            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 18px;
-            color: #ffd700; /* Золотой цвет монет */
-        }
-
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
-            width: 100%;
+        .game-card {
+            background: var(--card-bg);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-        .product-img {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-            border-radius: 50%;
-            margin: 0 auto 15px;
-        }
-
-        h3 { margin: 0 0 10px 0; }
-        p { margin: 0 0 20px 0; color: #aaa; font-size: 14px; }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #3a3a3c;
-            color: white;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
             padding: 15px;
-            border: none;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            border: 2px solid transparent;
+        }
+        .game-card:active { transform: scale(0.95); }
+        .game-card.selected { border-color: var(--accent); }
+        .game-icon {
+            width: 60px; height: 60px;
             border-radius: 12px;
-            background-color: var(--tg-theme-button-color, #007aff);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            font-size: 16px;
+            margin-bottom: 10px;
+            background-size: cover;
+        }
+
+        /* SLIDERS */
+        .slider-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 10px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+        
+        .item-card {
+            min-width: 140px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .item-img { width: 80px; height: 80px; background: #333; border-radius: 50%; margin-bottom: 10px; }
+        .price-tag { font-size: 12px; color: var(--text-sec); margin-top: 5px; }
+        .buy-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            width: 100%;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
 
-        button:active { opacity: 0.8; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Стили для экранов формы и загрузки */
-        #shop-screen { display: block; }
-        #form-screen, #loading-screen, #error-screen { display: none; }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        /* MODALS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-overlay.active { display: flex; opacity: 1; }
         
-        .error-icon { font-size: 50px; margin-bottom: 20px; }
+        .modal-content {
+            background: #252525;
+            width: 85%;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        /* DAILY CHECK-IN */
+        .daily-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .day-box {
+            background: #333;
+            min-width: 40px;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-right: 5px;
+            font-size: 10px;
+            opacity: 0.5;
+        }
+        .day-box.active { background: var(--green); opacity: 1; color: #000; font-weight: bold; }
+        .day-box.current { border: 2px solid var(--accent); opacity: 1; }
+
+        /* ROULETTE */
+        .wheel-container {
+            width: 250px; height: 250px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: conic-gradient(
+                #ffb703 0deg 60deg, 
+                #fb8500 60deg 120deg, 
+                #ffb703 120deg 180deg, 
+                #fb8500 180deg 240deg, 
+                #ffb703 240deg 300deg, 
+                #fb8500 300deg 360deg
+            );
+        }
+        .wheel-pointer {
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 20px solid white;
+            z-index: 2;
+        }
+        .wheel-item {
+            position: absolute;
+            width: 50%; height: 50%;
+            top: 50%; left: 50%;
+            transform-origin: 0 0;
+            text-align: right;
+            padding-right: 30px;
+            box-sizing: border-box;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 0;
+            color: #000;
+        }
+
+        /* ADMIN PANEL */
+        .admin-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            background: #e63946; color: white;
+            width: 50px; height: 50px; border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            font-size: 24px; box-shadow: 0 4px 12px rgba(230,57,70,0.5);
+            z-index: 90; cursor: pointer;
+        }
+        .admin-form input, .admin-form select {
+            width: 100%; margin-bottom: 10px; padding: 10px;
+            border-radius: 8px; border: none; background: #333; color: white;
+        }
     </style>
 </head>
 <body>
 
-    <div id="shop-screen">
-        <div class="header">
-            <span>Магазин</span>
-            <div class="balance-box">💎 <span id="balance">0</span></div>
+    <div class="header">
+        <div class="wallet">
+            <div class="currency">🪙 <span id="balance-coins">0</span></div>
+            <div class="currency">₽ <span id="balance-rub">0</span></div>
+        </div>
+        <div id="user-name">Guest</div>
+    </div>
+
+    <div class="container">
+        <h2>Выберите игру</h2>
+        <div class="games-grid" id="games-container">
+            </div>
+
+        <div id="shop-section" style="display:none;">
+            <h2 id="selected-game-title">Товары</h2>
+            <div class="slider-container" id="products-container">
+                </div>
         </div>
 
-        <div class="card">
-            <h3>Ежедневная награда</h3>
-            <p>Заходи каждый день и получай монеты!</p>
-            <button id="dailyBtn" onclick="getDailyBonus()">Забрать +5 💎</button>
-        </div>
-
-        <div class="card">
+        <div style="margin-top: 30px; background: #252525; padding: 15px; border-radius: 16px;">
             <h3>Промокод</h3>
-            <input type="text" id="promoInput" placeholder="Введите код...">
-            <button onclick="activatePromo()">Активировать</button>
-        </div>
-
-        <div class="card">
-            <div class="product-img"></div> <h3>Pro Pass Season 1</h3>
-            <p>Доступ к премиум наградам</p>
-            <button onclick="buyItem()">Купить за 105 💎</button>
+            <p style="font-size: 12px; color: #aaa;">Введите код для монет или вращения колеса</p>
+            <input type="text" id="promo-input" placeholder="Код..." style="width: 100%; padding: 10px; border-radius: 8px; border:none; margin-bottom:10px; box-sizing:border-box;">
+            <button onclick="activatePromo()" style="width: 100%; padding: 10px; background: #fff; color: #000; border:none; border-radius: 8px; font-weight:bold;">Активировать</button>
         </div>
     </div>
 
-    <div id="form-screen" class="card">
-        <h3>Оформление заказа</h3>
-        <p>Для активации Pass введите ваш Email привязанный к игре (ID).</p>
-        <input type="email" id="emailInput" placeholder="example@gmail.com">
-        <button onclick="submitOrder()">Продолжить</button>
-        <br><br>
-        <button style="background: transparent; color: #aaa;" onclick="goBack()">Отмена</button>
+    <div id="admin-float-btn" class="admin-btn" onclick="openAdmin()">⚙️</div>
+
+    <div id="daily-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>📅 Ежедневная награда</h3>
+            <p>Забирай бонусы каждый день!</p>
+            <div class="daily-row" id="daily-days">
+                </div>
+            <button onclick="claimDaily()" id="claim-btn" style="width:100%; padding:15px; background:var(--green); border:none; border-radius:12px; color:#fff; font-weight:bold;">ЗАБРАТЬ</button>
+        </div>
     </div>
 
-    <div id="loading-screen" class="card" style="border: none; background: transparent;">
-        <div class="loader"></div>
-        <p id="loading-text">Соединение с сервером...</p>
+    <div id="roulette-modal" class="modal-overlay">
+        <div class="modal-content" style="background: #1a0b2e; border: 1px solid #ffb703;">
+            <h3 style="color: #ffb703;">🎰 КОЛЕСО ФОРТУНЫ</h3>
+            <div style="position: relative; padding-top: 20px;">
+                <div class="wheel-pointer"></div>
+                <div class="wheel-container" id="wheel">
+                    </div>
+            </div>
+            <button onclick="spinWheel()" id="spin-btn" style="width:100%; padding:15px; background: #ffb703; border:none; border-radius:12px; color:#000; font-weight:bold; margin-top:15px;">КРУТИТЬ</button>
+            <button onclick="closeModal('roulette-modal')" style="background:transparent; color:#aaa; border:none; margin-top:10px;">Закрыть</button>
+        </div>
     </div>
 
-    <div id="error-screen" class="card">
-        <div class="error-icon">⚠️</div>
-        <h3>Требуется действие</h3>
-        <p>Система безопасности отклонила автоматическую выдачу. Необходимо ручное подтверждение администратора.</p>
-        <button onclick="contactSupport()">Перейти в чат с поддержкой</button>
+    <div id="admin-modal" class="modal-overlay">
+        <div class="modal-content admin-form" style="text-align: left;">
+            <h3>⚙️ Админ Панель</h3>
+            
+            <h4>Добавить товар</h4>
+            <select id="adm-game-select"></select>
+            <input type="text" id="adm-name" placeholder="Название (напр. 30 Гемов)">
+            <input type="number" id="adm-price-c" placeholder="Цена в монетах">
+            <input type="number" id="adm-price-r" placeholder="Цена в рублях">
+            <button onclick="admAddProduct()" style="width:100%; padding:10px; background:blue; color:white; border:none; border-radius:8px;">Добавить товар</button>
+            
+            <hr style="border-color: #444; margin: 15px 0;">
+            
+            <h4>Генератор Промо</h4>
+            <select id="adm-promo-type">
+                <option value="coins">Монеты (+100)</option>
+                <option value="spin">Вращение колеса</option>
+            </select>
+            <input type="text" id="adm-code" placeholder="Код (напр. BONUS2025)">
+            <button onclick="admAddPromo()" style="width:100%; padding:10px; background:green; color:white; border:none; border-radius:8px;">Создать код</button>
+
+            <button onclick="closeModal('admin-modal')" style="width:100%; padding:10px; background:#444; color:white; border:none; border-radius:8px; margin-top:15px;">Закрыть</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // На весь экран
+        tg.expand();
 
-        let balance = 0;
-        let bonusClaimed = false;
-        let promoUsed = false;
+        // === 1. НАСТРОЙКИ И ДАННЫЕ (База данных в памяти) ===
+        // ВАЖНО: Вставь сюда свой ID телеграм, чтобы видеть админку!
+        const ADMIN_ID = 123456789; // <--- ЗАМЕНИТЬ НА СВОЙ ID
 
-        // 1. Логика бонуса
-        function getDailyBonus() {
-            if (bonusClaimed) return;
-            balance += 5;
-            bonusClaimed = true;
-            document.getElementById('dailyBtn').innerText = "Получено ✅";
-            document.getElementById('dailyBtn').disabled = true;
-            updateBalance();
-        }
+        // Начальные данные (если пользователь зашел первый раз)
+        const defaultData = {
+            coins: 0,
+            rubles: 0,
+            loginStreak: 0,
+            lastLoginDate: null,
+            inventory: [],
+            usedPromos: []
+        };
 
-        // 2. Логика промокода (Код: START)
-        function activatePromo() {
-            const code = document.getElementById('promoInput').value.trim().toUpperCase();
-            if (code === "START" && !promoUsed) {
-                balance += 100;
-                promoUsed = true;
-                alert("Промокод активирован! +100 монет");
-                updateBalance();
-            } else if (promoUsed) {
-                alert("Вы уже использовали промокод");
-            } else {
-                alert("Неверный код");
+        // Игры и товары (Может редактировать админ)
+        let games = [
+            { id: 'brawl', name: 'Brawl Stars', color: '#ffb703', icon: 'https://cdn-icons-png.flaticon.com/512/2696/2696047.png' },
+            { id: 'clash', name: 'Clash Royale', color: '#219ebc', icon: 'https://cdn-icons-png.flaticon.com/512/1198/1198270.png' }
+        ];
+
+        let products = [
+            { gameId: 'brawl', name: '30 Гемов', priceC: 50, priceR: 99, img: '' },
+            { gameId: 'brawl', name: 'Brawl Pass', priceC: 500, priceR: 899, img: '' },
+            { gameId: 'clash', name: '1000 Золота', priceC: 20, priceR: 49, img: '' },
+        ];
+
+        let promos = {
+            'START': { type: 'coins', val: 100 },
+            'SPIN': { type: 'spin', val: 1 }
+        };
+
+        // Загрузка данных юзера из LocalStorage (Память телефона)
+        let user = JSON.parse(localStorage.getItem('user_data')) || defaultData;
+        
+        // === 2. ИНИЦИАЛИЗАЦИЯ ===
+        function init() {
+            // Отображаем юзера
+            const tgUser = tg.initDataUnsafe.user;
+            document.getElementById('user-name').innerText = tgUser ? tgUser.first_name : 'Guest';
+            
+            // Проверка на админа
+            if (tgUser && tgUser.id === ADMIN_ID) {
+                document.getElementById('admin-float-btn').style.display = 'flex';
             }
+
+            renderBalance();
+            renderGames();
+            checkDailyLogin();
+            initWheel();
         }
 
-        function updateBalance() {
-            document.getElementById('balance').innerText = balance;
+        // === 3. РЕНДЕРИНГ ИНТЕРФЕЙСА ===
+        function renderBalance() {
+            document.getElementById('balance-coins').innerText = user.coins;
+            document.getElementById('balance-rub').innerText = user.rubles;
+            saveData();
         }
 
-        // 3. Переход к покупке
-        function buyItem() {
-            if (balance < 105) {
-                tg.showAlert("Недостаточно монет! Вам нужно 105.");
+        function renderGames() {
+            const container = document.getElementById('games-container');
+            container.innerHTML = '';
+            games.forEach(game => {
+                const el = document.createElement('div');
+                el.className = 'game-card';
+                // В реальном проекте используем реальные картинки
+                el.innerHTML = `
+                    <div class="game-icon" style="background-color: ${game.color}; margin: 0 auto 10px;"></div>
+                    <strong>${game.name}</strong>
+                `;
+                el.onclick = () => selectGame(game);
+                container.appendChild(el);
+            });
+            
+            // Обновляем селект в админке
+            const admSelect = document.getElementById('adm-game-select');
+            admSelect.innerHTML = '';
+            games.forEach(g => {
+                admSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+            });
+        }
+
+        function selectGame(game) {
+            document.getElementById('shop-section').style.display = 'block';
+            document.getElementById('selected-game-title').innerText = game.name;
+            document.getElementById('selected-game-title').style.color = game.color;
+            
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+
+            const gameProducts = products.filter(p => p.gameId === game.id);
+            
+            if(gameProducts.length === 0) {
+                container.innerHTML = '<p style="color:#666;">Товаров пока нет</p>';
                 return;
             }
-            // Переключаем экран
-            document.getElementById('shop-screen').style.display = 'none';
-            document.getElementById('form-screen').style.display = 'block';
+
+            gameProducts.forEach(prod => {
+                const el = document.createElement('div');
+                el.className = 'item-card';
+                el.innerHTML = `
+                    <div class="item-img"></div>
+                    <strong>${prod.name}</strong>
+                    <div class="price-tag">${prod.priceC} 🪙 / ${prod.priceR} ₽</div>
+                    <button class="buy-btn" onclick="buyItem('${prod.name}', ${prod.priceC})">Купить</button>
+                `;
+                container.appendChild(el);
+            });
+            
+            // Плавный скролл к товарам
+            document.getElementById('shop-section').scrollIntoView({behavior: "smooth"});
         }
 
-        function goBack() {
-            document.getElementById('shop-screen').style.display = 'block';
-            document.getElementById('form-screen').style.display = 'none';
+        // === 4. ЕЖЕДНЕВНЫЙ БОНУС ===
+        function checkDailyLogin() {
+            const today = new Date().toDateString();
+            if (user.lastLoginDate !== today) {
+                // Показываем окно
+                openModal('daily-modal');
+                renderDailyGrid();
+            }
         }
 
-        // 4. ГЛАВНАЯ ЛОГИКА: Отправка данных и Фейк-загрузка
-        function submitOrder() {
-            const email = document.getElementById('emailInput').value;
-            if (!email) return;
+        function renderDailyGrid() {
+            const container = document.getElementById('daily-days');
+            container.innerHTML = '';
+            for (let i = 1; i <= 7; i++) {
+                const el = document.createElement('div');
+                el.className = `day-box ${i <= user.loginStreak ? 'active' : ''} ${i === user.loginStreak + 1 ? 'current' : ''}`;
+                el.innerHTML = `<span>Day</span><span>${i}</span>`;
+                if(i === 7) el.innerHTML += `<span style="font-size:8px">BIG</span>`;
+                container.appendChild(el);
+            }
+        }
 
-            // Скрываем форму, показываем загрузку
-            document.getElementById('form-screen').style.display = 'none';
-            document.getElementById('loading-screen').style.display = 'block';
+        function claimDaily() {
+            const today = new Date().toDateString();
+            user.lastLoginDate = today;
+            user.loginStreak = (user.loginStreak % 7) + 1;
+            
+            // Награда
+            const reward = 5 * user.loginStreak; // Прогрессивная награда
+            user.coins += reward;
+            
+            tg.showAlert(`Вы получили ${reward} монет!`);
+            renderBalance();
+            closeModal('daily-modal');
+        }
 
-            // ОТПРАВЛЯЕМ ДАННЫЕ В БОТА (АДМИНУ)
-            // sendData отправляет данные в бота, но не закрывает окно автоматически, если мы не скажем
-            // Мы используем это, чтобы передать инфу.
-            const data = JSON.stringify({ action: "buy_pass", email: email });
-            tg.sendData(data); 
-            // Внимание: tg.sendData обычно закрывает WebApp. 
-            // Чтобы оно НЕ закрылось и показало анимацию, нам нужно не использовать sendData, 
-            // а использовать AJAX запрос на сервер. 
-            // НО, так как у нас нет внешнего сервера, мы сделаем хитрость:
-            // Мы просто покажем анимацию, а данные отправим "понарошку" или заставим юзера написать их в саппорт.
+        // === 5. РУЛЕТКА И ПРОМО ===
+        function activatePromo() {
+            const code = document.getElementById('promo-input').value.trim();
+            if (user.usedPromos.includes(code)) {
+                tg.showAlert('Вы уже использовали этот код!');
+                return;
+            }
             
-            // ВАРИАНТ ДЛЯ БОТА БЕЗ HTTPS СЕРВЕРА:
-            // sendData закроет окно. Это поведение Телеграм. 
-            // Чтобы реализовать твою схему (анимация -> ошибка внутри окна), нужен внешний HTTPS сервер (backend).
+            if (promos[code]) {
+                const reward = promos[code];
+                user.usedPromos.push(code);
+                
+                if (reward.type === 'coins') {
+                    user.coins += reward.val;
+                    tg.showAlert(`Промокод принят! +${reward.val} монет`);
+                    renderBalance();
+                } else if (reward.type === 'spin') {
+                    openModal('roulette-modal');
+                }
+            } else {
+                tg.showAlert('Неверный код');
+            }
+        }
+
+        function initWheel() {
+            const wheel = document.getElementById('wheel');
+            const prizes = [10, 50, 20, 100, 5, 200]; // 6 секторов
             
-            // ЕСЛИ ТЫ ПРОСТО ЗАПУСКАЕШЬ HTML ЛОКАЛЬНО ИЛИ ЧЕРЕЗ BOT FATHER, 
-            // то sendData закроет приложение. 
+            prizes.forEach((p, i) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                el.style.transform = `rotate(${i * 60}deg)`; // 360 / 6 = 60
+                el.innerText = p;
+                wheel.appendChild(el);
+            });
+        }
+
+        function spinWheel() {
+            const btn = document.getElementById('spin-btn');
+            const wheel = document.getElementById('wheel');
             
-            // ДАВАЙ ИМИТИРОВАТЬ. 
-            // Мы НЕ вызываем tg.sendData прямо сейчас, чтобы окно не закрылось.
-            // Мы отправим данные админу ПОСЛЕ того как юзер нажмет "Поддержка" или просто визуально.
+            if(btn.disabled) return;
+            btn.disabled = true;
+
+            // Расчет вращения (минимум 5 оборотов + рандом)
+            const sectorAngle = 60;
+            const randomSector = Math.floor(Math.random() * 6);
+            const extraDeg = 360 * 5 + (360 - (randomSector * sectorAngle)); 
             
-            // Имитация задержки и проверки
+            wheel.style.transform = `rotate(${extraDeg}deg)`;
+
+            // Результат
+            const prizes = [10, 50, 20, 100, 5, 200];
+            const win = prizes[randomSector]; // Упрощенная логика (надо согласовать с градусами)
+
             setTimeout(() => {
-                document.getElementById('loading-text').innerText = "Проверка безопасности...";
-            }, 2000);
-
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-                document.getElementById('error-screen').style.display = 'block';
-            }, 4500);
+                tg.showAlert(`Вы выиграли ${win} гемов! (Условно, начислено в монеты)`);
+                user.coins += win;
+                renderBalance();
+                btn.disabled = false;
+                closeModal('roulette-modal');
+                // Сброс колеса для красоты можно делать, но сложно без сбоя анимации
+            }, 4000);
         }
 
-        // 5. Переход в поддержку
-        function contactSupport() {
-            // Вот тут мы можем отправить данные, но лучше просто перекинуть в чат
-            const email = document.getElementById('emailInput').value;
-            // Формируем сообщение, с которым юзер придет к тебе
-            const text = `Здравствуйте, я оплатил Pass, но возникла ошибка. Мой ID: ${email}`;
-            const adminUsername = "cooky9"; // ЗАМЕНИТЬ НА СВОЙ БЕЗ @
-            
-            tg.openTelegramLink(`https://t.me/${adminUsername}?text=${encodeURIComponent(text)}`);
-            tg.close();
+        // === 6. ЛОГИКА ПОКУПКИ ===
+        function buyItem(name, price) {
+            if(user.coins >= price) {
+                tg.showConfirm(`Купить ${name} за ${price} монет?`, (ok) => {
+                    if(ok) {
+                        user.coins -= price;
+                        // Тут переход к оформлению заказа из прошлого кода
+                        // Для примера просто спишем:
+                        renderBalance();
+                        tg.showAlert('Успешно! Свяжитесь с поддержкой для получения.');
+                        // Здесь можно открыть chat админа
+                    }
+                });
+            } else {
+                tg.showAlert('Недостаточно монет! Пополните баланс.');
+            }
         }
+
+        // === 7. АДМИН ПАНЕЛЬ ===
+        function openAdmin() { openModal('admin-modal'); }
+
+        function admAddProduct() {
+            const gameId = document.getElementById('adm-game-select').value;
+            const name = document.getElementById('adm-name').value;
+            const priceC = parseInt(document.getElementById('adm-price-c').value);
+            const priceR = parseInt(document.getElementById('adm-price-r').value);
+
+            if(name && priceC) {
+                products.push({ gameId, name, priceC, priceR, img: '' });
+                tg.showAlert('Товар добавлен!');
+                // Обновляем интерфейс
+                if(document.getElementById('selected-game-title').innerText) {
+                    const activeGame = games.find(g => g.id === gameId);
+                    if(activeGame) selectGame(activeGame);
+                }
+            }
+        }
+
+        function admAddPromo() {
+            const type = document.getElementById('adm-promo-type').value;
+            const code = document.getElementById('adm-code').value;
+            if(code) {
+                promos[code] = { type: type, val: (type === 'coins' ? 100 : 1) };
+                tg.showAlert(`Код ${code} создан!`);
+            }
+        }
+
+        // === ВСПОМОГАТЕЛЬНЫЕ ===
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        function saveData() {
+            localStorage.setItem('user_data', JSON.stringify(user));
+        }
+
+        // Запуск
+        init();
+
     </script>
 </body>
 </html>
