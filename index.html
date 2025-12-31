@@ -251,7 +251,7 @@
             const email = document.getElementById('emailInput').value;
             // Формируем сообщение, с которым юзер придет к тебе
             const text = `Здравствуйте, я оплатил Pass, но возникла ошибка. Мой ID: ${email}`;
-            const adminUsername = "ВАШ_ЮЗЕРНЕЙМ_ТЕЛЕГРАМ"; // ЗАМЕНИТЬ НА СВОЙ БЕЗ @
+            const adminUsername = "cooky9"; // ЗАМЕНИТЬ НА СВОЙ БЕЗ @
             
             tg.openTelegramLink(`https://t.me/${adminUsername}?text=${encodeURIComponent(text)}`);
             tg.close();
