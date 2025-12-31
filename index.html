@@ -93,13 +93,24 @@
             flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white;
         }
 
-        /* ADMIN */
-        .admin-btn {
-            position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+        /* FLOATING BUTTONS */
+        .fab-chat {
+            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
+            background: var(--green); border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; font-size: 28px;
+            box-shadow: 0 5px 20px rgba(46,204,113,0.4); z-index: 100; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .fab-chat:active { transform: scale(0.9); }
+
+        .fab-admin {
+            position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px;
             background: var(--red); border-radius: 50%; display: none;
             justify-content: center; align-items: center; font-size: 24px;
             box-shadow: 0 5px 20px rgba(230,57,70,0.5); z-index: 100; cursor: pointer;
         }
+
+        /* ADMIN TABS */
         .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
         .tab-btn { background: #333; color: #fff; padding: 8px 15px; border-radius: 8px; border: none; white-space: nowrap; }
         .tab-btn.active { background: white; color: black; }
@@ -217,23 +228,24 @@
         </div>
     </div>
 
-    <div id="fab-admin" class="admin-btn" onclick="openAdmin()">⚙️</div>
+    <div class="fab-chat" onclick="openChat()">💬</div>
+    <div id="fab-admin" class="fab-admin" onclick="openAdmin()">⚙️</div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ⚠️ ЗАМЕНИ НА СВОЙ АКТУАЛЬНЫЙ NGROK
+        // ⚠️ ЗАМЕНИ НА СВОЙ NGROK
         const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev";
 
-        // ЛОГИКА ID: Если нет телеграм ID (браузер/гость), генерируем случайный и сохраняем
+        // ЛОГИКА ID
         let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
         let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Гость";
 
         if (!USER_ID) {
             let storedId = localStorage.getItem('guest_user_id');
             if (!storedId) {
-                storedId = Math.floor(Math.random() * 1000000000); // Генерируем ID
+                storedId = Math.floor(Math.random() * 1000000000); 
                 localStorage.setItem('guest_user_id', storedId);
             }
             USER_ID = parseInt(storedId);
@@ -247,7 +259,6 @@
         let currentChatUserId = USER_ID;
         let isAdmin = false;
         let chatInterval = null;
-        let isSupportConnected = false; // Флаг: подключена ли Вика
 
         // --- API CORE ---
         async function api(endpoint, method='GET', body=null) {
@@ -266,7 +277,6 @@
 
         // --- INITIALIZATION ---
         async function init() {
-            // Регистрация юзера (даже гостя)
             const uData = await api('/api/user', 'POST', {user_id: USER_ID, username: USERNAME});
             if(uData) {
                 document.getElementById('bal-c').innerText = uData.coins;
@@ -361,21 +371,17 @@
             
             await api('/api/chat/send', 'POST', {user_id: USER_ID, sender: 'user', text: `[ЗАКАЗ] Данные: ${val}`});
             document.getElementById('modal-email').style.display = 'none';
-            
-            // Запускаем сценарий чата
             openChat(USER_ID); 
         }
 
-        // --- CHAT SYSTEM & SUPPORT SIMULATION ---
+        // --- CHAT SYSTEM ---
         function openChat(targetUid) {
             currentChatUserId = targetUid || USER_ID;
             document.getElementById('modal-chat').style.display = 'flex';
             
-            // Если чат открыл админ - сразу Вика
             if (isAdmin) {
                 showSupportHeader(true);
             } else {
-                // Если юзер - проверяем, была ли история
                 checkSupportStatus();
             }
 
@@ -384,9 +390,7 @@
         }
 
         function checkSupportStatus() {
-            // Если это обычный юзер, при открытии чата - состояние "Поиск"
             showSupportHeader(false);
-            // Вика подключится только после отправки сообщения
         }
 
         function showSupportHeader(connected) {
@@ -411,7 +415,6 @@
             
             box.innerHTML = '';
             if(msgs && msgs.length > 0) {
-                // Если есть сообщения от support - значит Вика уже подключена
                 const hasSupportMsg = msgs.some(m => m.sender === 'support');
                 if (hasSupportMsg) showSupportHeader(true);
 
@@ -422,7 +425,6 @@
                     box.appendChild(div);
                 });
             }
-            // Скролл вниз
             if (wasEmpty) box.scrollTop = box.scrollHeight;
         }
 
@@ -433,21 +435,16 @@
             
             const sender = (isAdmin && currentChatUserId !== USER_ID) ? 'support' : 'user';
             
-            // 1. Отправляем сообщение юзера
             await api('/api/chat/send', 'POST', {user_id: currentChatUserId, sender, text: txt});
             inp.value = '';
             loadChat();
 
-            // 2. СЦЕНАРИЙ "ВИКА К." (Только если пишет обычный юзер)
+            // СЦЕНАРИЙ ВИКИ
             if (!isAdmin && sender === 'user') {
-                const box = document.getElementById('chat-messages');
-                
-                // Проверяем, подключена ли уже Вика. Если нет - запускаем шоу.
-                // (Простая проверка: смотрим, горит ли зеленый статус)
                 const isOnline = document.getElementById('support-info').style.display === 'block';
 
                 if (!isOnline) {
-                    // А. Показываем "Поиск агента"
+                    const box = document.getElementById('chat-messages');
                     const sysDiv = document.createElement('div');
                     sysDiv.className = 'msg system';
                     sysDiv.id = 'temp-searching';
@@ -455,23 +452,15 @@
                     box.appendChild(sysDiv);
                     box.scrollTop = box.scrollHeight;
 
-                    // Б. Ждем 4 секунды
                     setTimeout(async () => {
-                        // Удаляем "Поиск"
                         const el = document.getElementById('temp-searching');
                         if(el) el.remove();
-
-                        // Включаем плашку Вики
                         showSupportHeader(true);
-
-                        // Вика пишет приветствие (сохраняем в БД, как будто ответил админ)
                         await api('/api/chat/send', 'POST', {
-                            user_id: USER_ID, 
-                            sender: 'support', 
+                            user_id: USER_ID, sender: 'support', 
                             text: '👋 Здравствуйте! Меня зовут Вика. Чем могу помочь?'
                         });
-                        loadChat(); // Подгружаем это сообщение
-                        
+                        loadChat();
                         tg.HapticFeedback.notificationOccurred('success');
                     }, 4000);
                 }
@@ -489,7 +478,6 @@
             document.getElementById(id).style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            
             if(id === 'adm-crm') loadCrm();
         }
 
@@ -512,7 +500,6 @@
             cont.innerHTML = '';
             
             if(users) users.forEach(u => {
-                // Не показываем самого админа в списке, чтобы не путаться
                 if (u.user_id === ADMIN_ID_CONST) return; 
 
                 cont.innerHTML += `
@@ -524,7 +511,6 @@
                         <button onclick="adminStartChat(${u.user_id})" style="background:#444; border:none; color:white; padding:5px 10px; border-radius:5px;">Чат</button>
                     </div>`;
             });
-            
             if(cont.innerHTML === '') cont.innerHTML = '<p style="color:#666; text-align:center">Нет пользователей</p>';
         }
 
