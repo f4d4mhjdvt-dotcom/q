@@ -34,10 +34,7 @@
         }
         .game-card:active { transform: scale(0.98); }
         .game-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
-        .game-title {
-            position: absolute; bottom: 15px; left: 15px;
-            font-weight: 800; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
+        .game-title { position: absolute; bottom: 15px; left: 15px; font-weight: 800; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
         /* PRODUCTS */
         .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -56,10 +53,7 @@
         
         .item-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; background: #333; }
         
-        .btn {
-            width: 100%; padding: 10px; border: none; border-radius: 8px;
-            font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 12px;
-        }
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 12px; }
         .btn-buy { background: var(--blue); color: white; }
         .btn-get { background: var(--accent); color: black; animation: pop 0.3s; }
         @keyframes pop { 0%{transform:scale(0.8);} 100%{transform:scale(1);} }
@@ -76,24 +70,25 @@
         }
 
         /* CHAT */
-        .chat-header {
-            display: flex; align-items: center; gap: 10px; padding-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
+        .chat-header { display: flex; align-items: center; gap: 10px; padding-bottom: 15px; border-bottom: 1px solid #333; }
         .support-tag { color: var(--green); font-size: 11px; background: rgba(46,204,113,0.1); padding: 2px 5px; border-radius: 4px; }
         
         .chat-box { flex: 1; overflow-y: auto; padding: 15px 0; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; }
         .msg.user { align-self: flex-end; background: var(--chat-user); }
         .msg.support { align-self: flex-start; background: var(--chat-support); }
         .msg.system { align-self: center; background: transparent; color: #888; font-size: 12px; font-style: italic; }
+        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
         
-        .chat-input { display: flex; gap: 10px; margin-top: auto; }
-        .chat-input input {
-            flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white;
+        .chat-input { display: flex; gap: 10px; margin-top: auto; align-items: center; }
+        .chat-input input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; }
+        
+        /* КНОПКА ЗАГРУЗКИ ФОТО */
+        .attach-btn {
+            background: none; border: none; color: #aaa; font-size: 24px; cursor: pointer; padding: 0 5px;
         }
 
-        /* FLOATING BUTTONS */
+        /* FLOATING BUTTONS & BADGE */
         .fab-chat {
             position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
             background: var(--green); border-radius: 50%; display: flex;
@@ -102,6 +97,17 @@
             transition: transform 0.2s;
         }
         .fab-chat:active { transform: scale(0.9); }
+        
+        /* БЕЙДЖ НЕПРОЧИТАННЫХ */
+        .chat-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--red); color: white; font-size: 12px; font-weight: bold;
+            width: 20px; height: 20px; border-radius: 50%;
+            display: none; justify-content: center; align-items: center;
+            border: 2px solid var(--bg);
+        }
+        .chat-badge.show { display: flex; animation: bounce 0.3s; }
+        @keyframes bounce { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
         .fab-admin {
             position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px;
@@ -173,6 +179,9 @@
             <div id="chat-messages" class="chat-box"></div>
             
             <div class="chat-input">
+                <button class="attach-btn" onclick="document.getElementById('file-in').click()">📎</button>
+                <input type="file" id="file-in" style="display:none" accept="image/*" onchange="handleFileSelect()">
+                
                 <input type="text" id="chat-in" placeholder="Сообщение...">
                 <button onclick="sendMsg()" style="background:var(--chat-user); border:none; color:white; width:40px; border-radius:8px;">➤</button>
             </div>
@@ -228,7 +237,10 @@
         </div>
     </div>
 
-    <div class="fab-chat" onclick="openChat()">💬</div>
+    <div class="fab-chat" onclick="openChat()">
+        💬
+        <div id="chat-badge" class="chat-badge">1</div>
+    </div>
     <div id="fab-admin" class="fab-admin" onclick="openAdmin()">⚙️</div>
 
     <script>
@@ -238,7 +250,6 @@
         // ⚠️ ЗАМЕНИ НА СВОЙ NGROK
         const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev";
 
-        // ЛОГИКА ID
         let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
         let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Гость";
 
@@ -259,6 +270,7 @@
         let currentChatUserId = USER_ID;
         let isAdmin = false;
         let chatInterval = null;
+        let globalPollInterval = null; // Для поллинга бейджа
 
         // --- API CORE ---
         async function api(endpoint, method='GET', body=null) {
@@ -272,7 +284,7 @@
                 if(!res.ok) throw new Error("Server Error");
                 const text = await res.text();
                 try { return JSON.parse(text); } catch { console.error("HTML error:", text); return null; }
-            } catch(e) { console.error(e); tg.showAlert("Ошибка связи!"); return null; }
+            } catch(e) { console.error(e); return null; }
         }
 
         // --- INITIALIZATION ---
@@ -295,6 +307,9 @@
                 allProducts = data.products;
                 renderGames();
             }
+
+            // ЗАПУСК ГЛОБАЛЬНОЙ ПРОВЕРКИ СООБЩЕНИЙ (ДЛЯ БЕЙДЖА)
+            if(!globalPollInterval) globalPollInterval = setInterval(checkUnreadMessages, 3000);
         }
 
         function renderGames() {
@@ -302,7 +317,6 @@
             cont.innerHTML = '';
             const admP = document.getElementById('adm-p-game');
             admP.innerHTML = '';
-
             allGames.forEach(g => {
                 cont.innerHTML += `
                     <div class="game-card" onclick="openGame('${g.id}')">
@@ -321,15 +335,12 @@
             
             const cont = document.getElementById('products-container');
             cont.innerHTML = '';
-            
             allProducts.filter(p => p.game_id === gid).forEach(p => {
                 const isBought = purchasedItems.includes(p.id);
                 const btnHtml = isBought 
                     ? `<button class="btn btn-get" onclick="openGetModal(${p.id})">ПОЛУЧИТЬ</button>`
                     : `<button class="btn btn-buy" onclick="buyItem(${p.id}, ${p.price_c})">Купить</button>`;
-                
                 const offerHtml = p.is_offer ? `<div class="offer-badge">SALE</div>` : '';
-                
                 cont.innerHTML += `
                     <div class="item-card ${p.is_offer ? 'offer':''}">
                         ${offerHtml}
@@ -368,7 +379,6 @@
         async function submitEmail() {
             const val = document.getElementById('email-in').value;
             if(!val) return tg.showAlert("Введите данные!");
-            
             await api('/api/chat/send', 'POST', {user_id: USER_ID, sender: 'user', text: `[ЗАКАЗ] Данные: ${val}`});
             document.getElementById('modal-email').style.display = 'none';
             openChat(USER_ID); 
@@ -379,33 +389,50 @@
             currentChatUserId = targetUid || USER_ID;
             document.getElementById('modal-chat').style.display = 'flex';
             
-            if (isAdmin) {
-                showSupportHeader(true);
-            } else {
-                checkSupportStatus();
-            }
+            // Если открыли чат - скрываем бейдж и помечаем как прочитанное
+            document.getElementById('chat-badge').classList.remove('show');
+            api('/api/chat/read', 'POST', {user_id: currentChatUserId});
+
+            if (isAdmin) showSupportHeader(true); else checkSupportStatus();
 
             loadChat();
             if(!chatInterval) chatInterval = setInterval(loadChat, 2000);
         }
 
-        function checkSupportStatus() {
-            showSupportHeader(false);
-        }
-
+        function checkSupportStatus() { showSupportHeader(false); }
         function showSupportHeader(connected) {
-            if (connected) {
-                document.getElementById('support-info').style.display = 'block';
-                document.getElementById('support-loading').style.display = 'none';
-            } else {
-                document.getElementById('support-info').style.display = 'none';
-                document.getElementById('support-loading').style.display = 'block';
-            }
+            document.getElementById('support-info').style.display = connected ? 'block' : 'none';
+            document.getElementById('support-loading').style.display = connected ? 'none' : 'block';
         }
         
         function closeModal(id) { 
             document.getElementById(id).style.display = 'none';
             if(id === 'modal-chat' && chatInterval) { clearInterval(chatInterval); chatInterval=null; }
+        }
+
+        // --- LOGIC: БЕЙДЖ НЕПРОЧИТАННЫХ ---
+        async function checkUnreadMessages() {
+            // Если мы админ и не в чате с кем-то - бейдж не нужен (или можно сделать для CRM)
+            // Здесь логика для обычного юзера
+            if(isAdmin) return;
+
+            // Тянем сообщения
+            const msgs = await api(`/api/chat?user_id=${USER_ID}`);
+            if(!msgs) return;
+
+            // Считаем непрочитанные от support
+            let unreadCount = 0;
+            msgs.forEach(m => {
+                if(m.sender === 'support' && m.is_read === 0) unreadCount++;
+            });
+
+            const badge = document.getElementById('chat-badge');
+            if(unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
         }
 
         async function loadChat() {
@@ -421,28 +448,58 @@
                 msgs.forEach(m => {
                     const div = document.createElement('div');
                     div.className = `msg ${m.sender}`;
-                    div.innerText = m.message;
+                    
+                    let content = `<div>${m.message}</div>`;
+                    if(m.img) {
+                        content += `<img src="${m.img}">`;
+                    }
+                    div.innerHTML = content;
                     box.appendChild(div);
                 });
             }
             if (wasEmpty) box.scrollTop = box.scrollHeight;
         }
 
-        async function sendMsg() {
+        // --- FILE UPLOAD LOGIC ---
+        function handleFileSelect() {
+            const file = document.getElementById('file-in').files[0];
+            if(file) {
+                // Confirm sending image
+                if(confirm("Отправить изображение?")) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64 = e.target.result;
+                        sendMsg(base64);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                // Clear input
+                document.getElementById('file-in').value = '';
+            }
+        }
+
+        async function sendMsg(imgData = null) {
             const inp = document.getElementById('chat-in');
             const txt = inp.value.trim();
-            if(!txt) return;
+            
+            // Если нет ни текста, ни картинки - выход
+            if(!txt && !imgData) return;
             
             const sender = (isAdmin && currentChatUserId !== USER_ID) ? 'support' : 'user';
             
-            await api('/api/chat/send', 'POST', {user_id: currentChatUserId, sender, text: txt});
+            await api('/api/chat/send', 'POST', {
+                user_id: currentChatUserId, 
+                sender, 
+                text: txt || (imgData ? "📷 Фото" : ""),
+                img: imgData
+            });
+            
             inp.value = '';
             loadChat();
 
-            // СЦЕНАРИЙ ВИКИ
+            // SCENARIO VIKA
             if (!isAdmin && sender === 'user') {
                 const isOnline = document.getElementById('support-info').style.display === 'block';
-
                 if (!isOnline) {
                     const box = document.getElementById('chat-messages');
                     const sysDiv = document.createElement('div');
@@ -498,10 +555,8 @@
             const users = await api('/api/admin/users');
             const cont = document.getElementById('crm-list');
             cont.innerHTML = '';
-            
             if(users) users.forEach(u => {
                 if (u.user_id === ADMIN_ID_CONST) return; 
-
                 cont.innerHTML += `
                     <div class="user-row">
                         <div>
