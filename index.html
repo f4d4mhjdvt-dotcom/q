@@ -3,624 +3,736 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gems Shop Ultimate</title>
+    <title>Gems Store</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #121212; --card: #1e1e1e; --accent: #ffb703; 
-            --blue: #219ebc; --green: #2ecc71; --red: #e63946;
-            --text: #fff; --subtext: #aaa;
-            --chat-user: #007aff; --chat-support: #333;
+            --bg: #0f0f0f; --card: #1c1c1e; --accent: #ffd700; --accent-glow: rgba(255, 215, 0, 0.3);
+            --text: #ffffff; --text-sec: #8e8e93;
+            --green: #30d158; --red: #ff453a; --blue: #0a84ff;
         }
-
         body {
             background-color: var(--bg); color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            margin: 0; padding: 20px; padding-bottom: 80px;
-            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 0; padding-bottom: 90px;
+            -webkit-tap-highlight-color: transparent; user-select: none;
         }
-
-        /* UI ELEMENTS */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .wallet { font-weight: 800; font-size: 16px; display: flex; gap: 15px; }
-        .wallet span span { color: var(--accent); }
-
-        h2 { margin: 0 0 15px 0; font-size: 18px; }
+        
+        /* --- LAYOUT & HEADER --- */
+        .container { padding: 20px; padding-top: 70px; }
+        .header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-sizing: border-box; z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .balance-box { font-weight: 700; font-size: 16px; color: var(--text); }
+        .balance-box span { color: var(--accent); }
+        
+        /* --- CARDS & GRIDS --- */
+        h2 { font-size: 22px; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; }
         
         .game-card {
-            background: var(--card); border-radius: 16px; height: 120px;
-            position: relative; overflow: hidden; margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s;
+            height: 140px; border-radius: 20px; overflow: hidden; position: relative;
+            margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: scale(1); transition: transform 0.2s; border: 1px solid rgba(255,255,255,0.05);
         }
-        .game-card:active { transform: scale(0.98); }
-        .game-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
-        .game-title { position: absolute; bottom: 15px; left: 15px; font-weight: 800; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-
-        /* PRODUCTS */
-        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .game-card:active { transform: scale(0.97); }
+        .game-card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7); }
+        .game-title {
+            position: absolute; bottom: 15px; left: 20px; font-size: 20px; font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        
+        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .item-card {
-            background: var(--card); border-radius: 14px; padding: 10px;
+            background: var(--card); border-radius: 16px; padding: 12px;
             display: flex; flex-direction: column; align-items: center; text-align: center;
-            position: relative; border: 1px solid transparent;
+            position: relative; border: 1px solid rgba(255,255,255,0.05);
         }
-        .item-card.offer { border-color: var(--red); }
-        .offer-badge {
-            position: absolute; top: -8px; right: -8px; background: var(--red);
-            font-size: 10px; padding: 4px 8px; border-radius: 8px; font-weight: bold;
-            animation: pulse 2s infinite;
+        .item-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-bottom: 10px; background: #2c2c2e; }
+        .item-name { font-weight: 600; font-size: 13px; line-height: 1.2; margin-bottom: 5px; height: 32px; overflow: hidden; }
+        .item-price { font-weight: 700; font-size: 14px; color: var(--accent); }
+        .offer-tag {
+            position: absolute; top: 8px; right: 8px; background: var(--red);
+            font-size: 9px; padding: 3px 6px; border-radius: 6px; font-weight: 800;
         }
-        @keyframes pulse { 0% {opacity:1;} 50% {opacity:0.7;} 100% {opacity:1;} }
-        
-        .item-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; background: #333; }
-        
-        .btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 12px; }
-        .btn-buy { background: var(--blue); color: white; }
-        .btn-get { background: var(--accent); color: black; animation: pop 0.3s; }
-        @keyframes pop { 0%{transform:scale(0.8);} 100%{transform:scale(1);} }
 
-        /* MODALS */
+        .btn {
+            width: 100%; padding: 10px; border: none; border-radius: 10px;
+            font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn-primary { background: var(--text); color: black; }
+        .btn-accent { background: var(--accent); color: black; box-shadow: 0 4px 15px var(--accent-glow); }
+        .btn-danger { background: var(--red); color: white; }
+
+        /* --- BOTTOM BAR (NAV) --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; width: 100%; display: flex;
+            justify-content: space-around; pointer-events: none; z-index: 1000;
+        }
+        .fab {
+            width: 50px; height: 50px; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; font-size: 24px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5); pointer-events: auto;
+            backdrop-filter: blur(10px); cursor: pointer; position: relative;
+        }
+        .fab-left { background: var(--card); border: 1px solid #333; color: #fff; } /* Admin */
+        .fab-center { background: var(--accent); color: #000; width: 60px; height: 60px; margin-bottom: 10px; } /* Cart */
+        .fab-right { background: var(--green); color: #fff; } /* Chat */
+        
+        .badge {
+            position: absolute; top: -2px; right: -2px; background: var(--red); color: white;
+            font-size: 10px; width: 18px; height: 18px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-weight: bold;
+            border: 2px solid var(--bg);
+        }
+
+        /* --- MODALS --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 2000; display: none;
-            flex-direction: column;
+            justify-content: flex-end; /* Bottom sheet logic */
         }
+        .modal.center { justify-content: center; align-items: center; }
+        
         .modal-content {
-            background: #1c1c1e; width: 100%; height: 100%;
-            padding: 20px; box-sizing: border-box; overflow-y: auto;
+            background: #151515; width: 100%; max-height: 90vh;
+            border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box;
+            overflow-y: auto; border-top: 1px solid #333; animation: slideUp 0.3s;
         }
-
-        /* CHAT */
-        .chat-header { display: flex; align-items: center; gap: 10px; padding-bottom: 15px; border-bottom: 1px solid #333; }
-        .support-tag { color: var(--green); font-size: 11px; background: rgba(46,204,113,0.1); padding: 2px 5px; border-radius: 4px; }
+        .modal.center .modal-content { width: 90%; border-radius: 20px; max-height: 80vh; animation: zoomIn 0.2s; }
         
-        .chat-box { flex: 1; overflow-y: auto; padding: 15px 0; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; }
-        .msg.user { align-self: flex-end; background: var(--chat-user); }
-        .msg.support { align-self: flex-start; background: var(--chat-support); }
-        .msg.system { align-self: center; background: transparent; color: #888; font-size: 12px; font-style: italic; }
-        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
-        
-        .chat-input { display: flex; gap: 10px; margin-top: auto; align-items: center; }
-        .chat-input input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; }
-        
-        /* КНОПКА ЗАГРУЗКИ ФОТО */
-        .attach-btn {
-            background: none; border: none; color: #aaa; font-size: 24px; cursor: pointer; padding: 0 5px;
-        }
+        @keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
+        @keyframes zoomIn { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
-        /* FLOATING BUTTONS & BADGE */
-        .fab-chat {
-            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
-            background: var(--green); border-radius: 50%; display: flex;
-            justify-content: center; align-items: center; font-size: 28px;
-            box-shadow: 0 5px 20px rgba(46,204,113,0.4); z-index: 100; cursor: pointer;
-            transition: transform 0.2s;
+        /* --- CART UI --- */
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card); padding: 10px; border-radius: 12px; margin-bottom: 10px;
         }
-        .fab-chat:active { transform: scale(0.9); }
+        .cart-price { font-weight: bold; }
+        .old-price { text-decoration: line-through; color: #666; font-size: 12px; margin-right: 5px; }
+
+        /* --- CHAT UI --- */
+        .chat-box { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .msg { padding: 10px 14px; border-radius: 16px; max-width: 80%; font-size: 14px; }
+        .msg.user { align-self: flex-end; background: var(--blue); }
+        .msg.support { align-self: flex-start; background: var(--card); }
+        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+
+        /* --- ADMIN UI --- */
+        .admin-tabs { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; }
+        .tab-btn { background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 13px; }
+        .tab-btn.active { background: var(--text); color: black; }
+        input, select { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
+        .icon-btn { background: none; border: none; font-size: 18px; padding: 5px; cursor: pointer; }
+
+        /* --- EFFECTS --- */
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5000; }
         
-        /* БЕЙДЖ НЕПРОЧИТАННЫХ */
-        .chat-badge {
-            position: absolute; top: -5px; right: -5px;
-            background: var(--red); color: white; font-size: 12px; font-weight: bold;
-            width: 20px; height: 20px; border-radius: 50%;
-            display: none; justify-content: center; align-items: center;
-            border: 2px solid var(--bg);
+        /* AUTH SCREEN */
+        #auth-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212;
+            z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 30px; text-align: center;
         }
-        .chat-badge.show { display: flex; animation: bounce 0.3s; }
-        @keyframes bounce { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
-
-        .fab-admin {
-            position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px;
-            background: var(--red); border-radius: 50%; display: none;
-            justify-content: center; align-items: center; font-size: 24px;
-            box-shadow: 0 5px 20px rgba(230,57,70,0.5); z-index: 100; cursor: pointer;
-        }
-
-        /* ADMIN TABS */
-        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; }
-        .tab-btn { background: #333; color: #fff; padding: 8px 15px; border-radius: 8px; border: none; white-space: nowrap; }
-        .tab-btn.active { background: white; color: black; }
-        
-        .form-input { width: 100%; padding: 12px; background: #2c2c2e; border: 1px solid #444; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        .user-row { background: #2c2c2e; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-
-        /* NOTIFICATION */
-        .notif {
-            position: fixed; top: 20px; left: 50%; transform: translate(-50%, -150%);
-            background: rgba(30,30,30,0.95); backdrop-filter: blur(10px);
-            padding: 10px 20px; border-radius: 30px; border: 1px solid #444;
-            display: flex; align-items: center; gap: 10px; z-index: 3000;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 85%;
-        }
-        .notif.show { transform: translate(-50%, 0); }
     </style>
 </head>
 <body>
 
-    <div id="screen-home">
-        <div class="header">
-            <div class="wallet">
-                <span><span id="bal-c">0</span> 💎</span>
-                <span><span id="bal-r">0</span> ₽</span>
-            </div>
-            <div id="username" style="color:var(--subtext)">...</div>
-        </div>
+    <canvas id="confetti-canvas"></canvas>
 
-        <h2>Выберите игру</h2>
-        <div id="games-container"></div>
+    <div class="header">
+        <div class="balance-box"><span>₽</span> <span id="balance">0</span></div>
+        <div id="user-name" style="font-size: 14px; color: var(--text-sec);">...</div>
     </div>
 
-    <div id="screen-products" style="display:none;">
-        <div class="header">
-            <h2 id="game-title">Товары</h2>
-            <button onclick="goHome()" style="background:none; border:none; color:var(--subtext); font-size:16px;">✕</button>
+    <div class="container" id="main-view">
+        <div id="section-start">
+            <h2>🔥 Популярные игры</h2>
+            <div id="games-list"></div>
         </div>
-        <div id="products-container" class="products-grid"></div>
+        
+        <div id="section-products" style="display:none;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                <button onclick="goHome()" style="background:none; border:none; color:white; font-size:20px;">⬅</button>
+                <h2 style="margin:0;" id="page-title">Товары</h2>
+            </div>
+            <div id="products-list" class="products-grid"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div id="btn-admin" class="fab fab-left" style="display:none;" onclick="openAdmin()">⚙️</div>
+        
+        <div class="fab fab-center" onclick="openCart()">
+            🛒
+            <div id="cart-badge" class="badge" style="display:none;">0</div>
+        </div>
+        
+        <div class="fab fab-right" onclick="openChat()">
+            💬
+            <div id="chat-badge" class="badge" style="display:none;">1</div>
+        </div>
+    </div>
+
+    <div id="modal-cart" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Корзина</h2>
+                <span onclick="closeModal('modal-cart')" style="font-size:20px;">✕</span>
+            </div>
+            
+            <div id="cart-items">
+                <p style="text-align:center; color:#666; margin: 40px 0;">Корзина пуста</p>
+            </div>
+            
+            <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="promo-input" placeholder="Промокод..." style="margin:0;">
+                    <button onclick="applyPromo()" style="width:auto; padding:0 20px; background:#333; color:white; border-radius:10px;">OK</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px; font-weight:bold; font-size:18px;">
+                    <span>Итого:</span>
+                    <span id="cart-total">0 ₽</span>
+                </div>
+                <button onclick="checkout()" class="btn btn-accent" style="padding: 15px; margin-top: 15px;">ОФОРМИТЬ ЗАКАЗ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-screen">
+        <h2 style="margin-bottom: 10px;">Supercell ID</h2>
+        <p style="color:#aaa; font-size:13px; margin-bottom:30px;">Введите почту для получения товара</p>
+        <input type="email" id="auth-email" placeholder="example@gmail.com" style="text-align:center;">
+        <button onclick="submitAuth()" class="btn btn-primary" id="auth-btn">Продолжить</button>
+        <div id="auth-loader" style="display:none; margin-top:20px; color:var(--accent);">
+            ⚡ Обработка данных...
+        </div>
     </div>
 
     <div id="modal-chat" class="modal">
-        <div class="modal-content" style="display:flex; flex-direction:column;">
-            <div class="chat-header">
-                <div style="width:40px; height:40px; background:#ddd; border-radius:50%; overflow:hidden;">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:100%; height:100%; object-fit:cover;">
-                </div>
-                <div id="support-info" style="display:none;">
-                    <div style="font-weight:bold;">Вика К. <span class="support-tag">ПОДДЕРЖКА</span></div>
-                    <div style="font-size:12px; color:var(--green)">Online</div>
-                </div>
-                <div id="support-loading" style="display:block;">
-                    <div style="font-weight:bold;">Чат поддержки</div>
-                    <div style="font-size:12px; color:#aaa;">Ожидание...</div>
-                </div>
-
-                <button onclick="closeModal('modal-chat')" style="margin-left:auto; background:none; border:none; color:#aaa; font-size:20px;">✕</button>
+        <div class="modal-content">
+            <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                <b>Поддержка</b>
+                <span onclick="closeModal('modal-chat')">✕</span>
             </div>
-            
-            <div id="chat-messages" class="chat-box"></div>
-            
-            <div class="chat-input">
-                <button class="attach-btn" onclick="document.getElementById('file-in').click()">📎</button>
-                <input type="file" id="file-in" style="display:none" accept="image/*" onchange="handleFileSelect()">
-                
-                <input type="text" id="chat-in" placeholder="Сообщение...">
-                <button onclick="sendMsg()" style="background:var(--chat-user); border:none; color:white; width:40px; border-radius:8px;">➤</button>
+            <div id="chat-box" class="chat-box"></div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span onclick="uploadFile()" style="font-size:24px; color:#aaa;">📎</span>
+                <input type="file" id="chat-file" hidden onchange="handleFile(this)">
+                <input type="text" id="chat-input" placeholder="Сообщение...">
+                <button onclick="sendMsg()" style="width:40px; background:var(--blue); color:white; border-radius:8px;">➤</button>
             </div>
-        </div>
-    </div>
-
-    <div id="modal-email" class="modal" style="justify-content:center; align-items:center; background:rgba(0,0,0,0.8);">
-        <div style="background:#252525; padding:25px; border-radius:20px; width:80%;">
-            <h3 style="margin-top:0;">📦 Получение</h3>
-            <p style="color:#aaa; font-size:13px;">Введите ID / Почту для доставки:</p>
-            <input type="text" id="email-in" class="form-input" placeholder="supercell_id...">
-            <button onclick="submitEmail()" class="btn btn-buy" style="background:var(--green); font-size:14px; padding:12px;">Подтвердить</button>
-            <button onclick="closeModal('modal-email')" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px;">Отмена</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal">
-        <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>⚙️ Админка</h2>
-                <button onclick="closeModal('modal-admin')" style="background:none; border:none; color:#aaa;">✕</button>
+        <div class="modal-content" style="height:90vh;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <b>Админ Панель</b> <span onclick="closeModal('modal-admin')">✕</span>
+            </div>
+            
+            <div class="admin-tabs">
+                <div class="tab-btn active" onclick="admTab('start')">Старт</div>
+                <div class="tab-btn" onclick="admTab('products')">Товары</div>
+                <div class="tab-btn" onclick="admTab('promos')">Промо</div>
+                <div class="tab-btn" onclick="admTab('crm')">CRM</div>
             </div>
 
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchTab('adm-products')">Товары</button>
-                <button class="tab-btn" onclick="switchTab('adm-crm')">CRM (Юзеры)</button>
+            <div id="adm-tab-start">
+                <div id="adm-games-list"></div>
+                <hr style="border-color:#333; margin:15px 0;">
+                <h4>Добавить игру</h4>
+                <input id="new-g-id" placeholder="ID (напр. pubg)">
+                <input id="new-g-name" placeholder="Название">
+                <button onclick="uploadFileAdmin('new-g-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Обложка игры</button>
+                <input type="hidden" id="new-g-img">
+                <button onclick="admSaveGame()" class="btn btn-primary">Сохранить</button>
             </div>
 
-            <div id="adm-products">
-                <select id="adm-p-game" class="form-input"></select>
-                <input id="adm-p-name" class="form-input" placeholder="Название (напр. 30 Гемов)">
-                <input id="adm-p-pricec" type="number" class="form-input" placeholder="Цена (монеты)">
-                <input id="adm-p-pricer" type="number" class="form-input" placeholder="Цена (рубли)">
-                <input id="adm-p-img" class="form-input" placeholder="Ссылка на картинку">
-                <label style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
-                    <input type="checkbox" id="adm-p-offer"> Спецпредложение (Таймер)
-                </label>
-                <button onclick="admAddProduct()" class="btn btn-buy">Создать товар</button>
+            <div id="adm-tab-products" style="display:none;">
+                <h4>Создать товар</h4>
+                <select id="new-p-game"></select>
+                <input id="new-p-name" placeholder="Название">
+                <input id="new-p-price" type="number" placeholder="Цена (RUB)">
+                <button onclick="uploadFileAdmin('new-p-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Картинка товара</button>
+                <input type="hidden" id="new-p-img">
+                <label><input type="checkbox" id="new-p-offer"> Спецпредложение</label>
+                <button onclick="admSaveProduct()" class="btn btn-primary">Создать</button>
+                
+                <h4 style="margin-top:20px;">Список</h4>
+                <div id="adm-products-list"></div>
             </div>
 
-            <div id="adm-crm" style="display:none;">
-                <button onclick="loadCrm()" style="width:100%; padding:10px; background:#444; border:none; color:white; border-radius:8px; margin-bottom:10px;">🔄 Обновить список</button>
-                <div id="crm-list"></div>
+            <div id="adm-tab-promos" style="display:none;">
+                <h4>Генератор кодов</h4>
+                <input id="promo-code" placeholder="Код (напр. FREE100)">
+                <select id="promo-type">
+                    <option value="item">Товар (100% скидка)</option>
+                    <option value="spin">Колесо Фортуны</option>
+                </select>
+                <select id="promo-val-item" style="display:block;"></select> <input id="promo-uses" type="number" placeholder="Кол-во активаций" value="1">
+                <button onclick="admCreatePromo()" class="btn btn-accent">Создать промокод</button>
+            </div>
+
+            <div id="adm-tab-crm" style="display:none;">
+                <button onclick="loadCRM()" class="btn btn-primary">Обновить список</button>
+                <div id="crm-users-list" style="margin-top:15px;"></div>
             </div>
         </div>
     </div>
-
-    <div id="notif-toast" class="notif" onclick="openChat(currentChatUserId)">
-        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" style="width:35px; height:35px; border-radius:50%;">
-        <div>
-            <div style="font-weight:bold; font-size:13px;">Вика К. <span style="color:var(--green)">[Support]</span></div>
-            <div style="font-size:12px; color:#ccc;">Новое сообщение</div>
-        </div>
-    </div>
-
-    <div class="fab-chat" onclick="openChat()">
-        💬
-        <div id="chat-badge" class="chat-badge">1</div>
-    </div>
-    <div id="fab-admin" class="fab-admin" onclick="openAdmin()">⚙️</div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // ⚠️ ЗАМЕНИ НА СВОЙ NGROK
+        // ⚠️ NGROK URL
         const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev";
 
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
         let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
-        let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Гость";
-
-        if (!USER_ID) {
-            let storedId = localStorage.getItem('guest_user_id');
-            if (!storedId) {
-                storedId = Math.floor(Math.random() * 1000000000); 
-                localStorage.setItem('guest_user_id', storedId);
-            }
-            USER_ID = parseInt(storedId);
+        let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Guest";
+        // Fake ID for browser testing
+        if(!USER_ID) {
+             let s = localStorage.getItem('gid'); 
+             if(!s) { s=Math.floor(Math.random()*1e9); localStorage.setItem('gid',s); }
+             USER_ID = parseInt(s);
         }
 
-        const ADMIN_ID_CONST = 947269219; // Твой ID
-        
-        let allGames = [];
-        let allProducts = [];
-        let purchasedItems = [];
-        let currentChatUserId = USER_ID;
         let isAdmin = false;
-        let chatInterval = null;
-        let globalPollInterval = null; // Для поллинга бейджа
+        let dataStore = { games: [], products: [] };
+        let cart = []; // [{id, name, price, img, promoApplied?}]
+        let currentChatId = USER_ID;
+        let appliedPromo = null; // {code, value (prodId)}
 
-        // --- API CORE ---
-        async function api(endpoint, method='GET', body=null) {
+        // --- API ---
+        async function api(path, method='GET', body=null) {
             try {
-                const opts = {
-                    method, 
-                    headers: {'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true'}
-                };
+                let opts = { method, headers: {'Content-Type':'application/json','ngrok-skip-browser-warning':'true'} };
                 if(body) opts.body = JSON.stringify(body);
-                const res = await fetch(`${BASE_URL}${endpoint}`, opts);
-                if(!res.ok) throw new Error("Server Error");
-                const text = await res.text();
-                try { return JSON.parse(text); } catch { console.error("HTML error:", text); return null; }
+                let r = await fetch(BASE_URL+path, opts);
+                if(!r.ok) throw new Error("API Error");
+                return await r.json();
             } catch(e) { console.error(e); return null; }
         }
 
-        // --- INITIALIZATION ---
+        // --- INIT ---
         async function init() {
-            const uData = await api('/api/user', 'POST', {user_id: USER_ID, username: USERNAME});
-            if(uData) {
-                document.getElementById('bal-c').innerText = uData.coins;
-                document.getElementById('bal-r').innerText = uData.rubles;
-                document.getElementById('username').innerText = USERNAME;
-                
-                if(uData.is_admin) {
+            let u = await api('/api/user', 'POST', {user_id: USER_ID, username: USERNAME});
+            if(u) {
+                document.getElementById('balance').innerText = u.balance;
+                document.getElementById('user-name').innerText = USERNAME;
+                if(u.is_admin) {
                     isAdmin = true;
-                    document.getElementById('fab-admin').style.display = 'flex';
+                    document.getElementById('btn-admin').style.display = 'flex';
+                    // Админ: корзина посередине
+                    document.querySelector('.fab-center').style.left = '50%';
+                    document.querySelector('.fab-center').style.transform = 'translateX(-50%)';
+                } else {
+                    // Юзер: корзина слева
+                    document.querySelector('.fab-center').classList.replace('fab-center', 'fab-left');
                 }
             }
-
-            const data = await api('/api/data');
-            if(data) {
-                allGames = data.games;
-                allProducts = data.products;
+            
+            let d = await api('/api/data');
+            if(d) {
+                dataStore = d;
                 renderGames();
             }
-
-            // ЗАПУСК ГЛОБАЛЬНОЙ ПРОВЕРКИ СООБЩЕНИЙ (ДЛЯ БЕЙДЖА)
-            if(!globalPollInterval) globalPollInterval = setInterval(checkUnreadMessages, 3000);
-        }
-
-        function renderGames() {
-            const cont = document.getElementById('games-container');
-            cont.innerHTML = '';
-            const admP = document.getElementById('adm-p-game');
-            admP.innerHTML = '';
-            allGames.forEach(g => {
-                cont.innerHTML += `
-                    <div class="game-card" onclick="openGame('${g.id}')">
-                        <img src="${g.img}">
-                        <div class="game-title">${g.name}</div>
-                    </div>`;
-                admP.innerHTML += `<option value="${g.id}">${g.name}</option>`;
-            });
-        }
-
-        function openGame(gid) {
-            const g = allGames.find(x => x.id === gid);
-            document.getElementById('game-title').innerText = g.name;
-            document.getElementById('screen-home').style.display = 'none';
-            document.getElementById('screen-products').style.display = 'block';
             
-            const cont = document.getElementById('products-container');
-            cont.innerHTML = '';
-            allProducts.filter(p => p.game_id === gid).forEach(p => {
-                const isBought = purchasedItems.includes(p.id);
-                const btnHtml = isBought 
-                    ? `<button class="btn btn-get" onclick="openGetModal(${p.id})">ПОЛУЧИТЬ</button>`
-                    : `<button class="btn btn-buy" onclick="buyItem(${p.id}, ${p.price_c})">Купить</button>`;
-                const offerHtml = p.is_offer ? `<div class="offer-badge">SALE</div>` : '';
-                cont.innerHTML += `
-                    <div class="item-card ${p.is_offer ? 'offer':''}">
-                        ${offerHtml}
-                        <img src="${p.img}" class="item-img" onerror="this.src='https://placehold.co/100'">
-                        <div style="font-weight:bold; font-size:13px;">${p.name}</div>
-                        <div style="font-size:11px; color:#aaa; margin-bottom:5px;">${p.price_c} 💎 / ${p.price_r} ₽</div>
-                        ${btnHtml}
-                    </div>`;
+            setInterval(checkChat, 3000);
+        }
+
+        // --- RENDER ---
+        function renderGames() {
+            let h = '';
+            // Обновляем селекты в админке
+            let sel = document.getElementById('new-p-game');
+            let selP = document.getElementById('adm-p-game'); // в старом коде
+            sel.innerHTML = ''; 
+            
+            dataStore.games.forEach(g => {
+                h += `<div class="game-card" onclick="openProducts('${g.id}', '${g.name}')">
+                        <img src="${g.img || 'https://placehold.co/400x150'}">
+                        <div class="game-title">${g.name}</div>
+                      </div>`;
+                sel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
             });
+            document.getElementById('games-list').innerHTML = h;
+            
+            // Render promo items select
+            let pSel = document.getElementById('promo-val-item');
+            pSel.innerHTML = '';
+            dataStore.products.forEach(p => {
+                pSel.innerHTML += `<option value="${p.id}">${p.name} (${p.price}₽)</option>`;
+            });
+        }
+
+        function openProducts(gid, gname) {
+            document.getElementById('section-start').style.display = 'none';
+            document.getElementById('section-products').style.display = 'block';
+            document.getElementById('page-title').innerText = gname;
+            
+            let h = '';
+            dataStore.products.filter(p => p.game_id === gid).forEach(p => {
+                h += `<div class="item-card">
+                        ${p.is_offer ? '<span class="offer-tag">SALE</span>' : ''}
+                        <img src="${p.img || 'https://placehold.co/80'}" class="item-img">
+                        <div class="item-name">${p.name}</div>
+                        <div class="item-price">${p.price} ₽</div>
+                        <button onclick="addToCart(${p.id})" class="btn btn-primary">В корзину</button>
+                      </div>`;
+            });
+            document.getElementById('products-list').innerHTML = h || '<p>Пусто</p>';
         }
 
         function goHome() {
-            document.getElementById('screen-products').style.display = 'none';
-            document.getElementById('screen-home').style.display = 'block';
+            document.getElementById('section-products').style.display = 'none';
+            document.getElementById('section-start').style.display = 'block';
         }
 
-        async function buyItem(pid, price) {
-            tg.showConfirm(`Списать ${price} монет?`, async (ok) => {
-                if(ok) {
-                    const res = await api('/api/buy', 'POST', {user_id: USER_ID, price});
-                    if(res && res.status === 'ok') {
-                        document.getElementById('bal-c').innerText = res.new_balance;
-                        purchasedItems.push(pid);
-                        const gTitle = document.getElementById('game-title').innerText;
-                        const g = allGames.find(x => x.name === gTitle);
-                        if(g) openGame(g.id);
-                    } else {
-                        tg.showAlert(res ? res.message : "Error");
-                    }
-                }
-            });
-        }
-
-        function openGetModal(pid) { document.getElementById('modal-email').style.display = 'flex'; }
-
-        async function submitEmail() {
-            const val = document.getElementById('email-in').value;
-            if(!val) return tg.showAlert("Введите данные!");
-            await api('/api/chat/send', 'POST', {user_id: USER_ID, sender: 'user', text: `[ЗАКАЗ] Данные: ${val}`});
-            document.getElementById('modal-email').style.display = 'none';
-            openChat(USER_ID); 
-        }
-
-        // --- CHAT SYSTEM ---
-        function openChat(targetUid) {
-            currentChatUserId = targetUid || USER_ID;
-            document.getElementById('modal-chat').style.display = 'flex';
+        // --- CART LOGIC ---
+        function addToCart(pid) {
+            let p = dataStore.products.find(x => x.id === pid);
+            cart.push({...p}); // Copy object
+            updateCartUI();
             
-            // Если открыли чат - скрываем бейдж и помечаем как прочитанное
-            document.getElementById('chat-badge').classList.remove('show');
-            api('/api/chat/read', 'POST', {user_id: currentChatUserId});
-
-            if (isAdmin) showSupportHeader(true); else checkSupportStatus();
-
-            loadChat();
-            if(!chatInterval) chatInterval = setInterval(loadChat, 2000);
+            // Animation for button? Simple toast
+            tg.HapticFeedback.notificationOccurred('success');
+            // Animate badge
+            let b = document.getElementById('cart-badge');
+            b.classList.add('bounce');
+            setTimeout(()=>b.classList.remove('bounce'), 300);
         }
 
-        function checkSupportStatus() { showSupportHeader(false); }
-        function showSupportHeader(connected) {
-            document.getElementById('support-info').style.display = connected ? 'block' : 'none';
-            document.getElementById('support-loading').style.display = connected ? 'none' : 'block';
-        }
-        
-        function closeModal(id) { 
-            document.getElementById(id).style.display = 'none';
-            if(id === 'modal-chat' && chatInterval) { clearInterval(chatInterval); chatInterval=null; }
-        }
-
-        // --- LOGIC: БЕЙДЖ НЕПРОЧИТАННЫХ ---
-        async function checkUnreadMessages() {
-            // 1. УБРАЛИ ПРОВЕРКУ if(isAdmin), ЧТОБЫ ТЫ МОГ ТЕСТИТЬ НА СЕБЕ
+        function updateCartUI() {
+            let b = document.getElementById('cart-badge');
+            b.innerText = cart.length;
+            b.style.display = cart.length ? 'flex' : 'none';
             
-            // 2. ДОБАВИЛИ &t=${Date.now()} ЧТОБЫ СБИТЬ КЭШ И ЗАСТАВИТЬ ТЕЛЕГРАМ ДЕЛАТЬ НОВЫЙ ЗАПРОС
-            const msgs = await api(`/api/chat?user_id=${USER_ID}&t=${Date.now()}`);
+            let list = document.getElementById('cart-items');
+            if(!cart.length) {
+                list.innerHTML = '<p style="text-align:center;color:#666;margin:40px 0;">Корзина пуста</p>';
+                document.getElementById('cart-total').innerText = '0 ₽';
+                return;
+            }
             
-            if(!msgs) return;
-
-            // Считаем непрочитанные от support
-            let unreadCount = 0;
-            msgs.forEach(m => {
-                // Если отправитель support И статус "не прочитано" (0)
-                if(m.sender === 'support' && m.is_read === 0) {
-                    unreadCount++;
-                }
-            });
-
-            const badge = document.getElementById('chat-badge');
-            if(unreadCount > 0) {
-                badge.innerText = unreadCount;
-                badge.classList.add('show');
+            let h = '';
+            let total = 0;
+            
+            cart.forEach((item, idx) => {
+                let priceDisplay = `${item.price} ₽`;
+                let finalPrice = item.price;
                 
-                // (Опционально) Вибрация, если количество изменилось (сложнее, пока пропустим)
-            } else {
-                badge.classList.remove('show');
-            }
-        }
-
-        async function loadChat() {
-            const msgs = await api(`/api/chat?user_id=${currentChatUserId}`);
-            const box = document.getElementById('chat-messages');
-            const wasEmpty = box.innerHTML === '';
-            
-            box.innerHTML = '';
-            if(msgs && msgs.length > 0) {
-                const hasSupportMsg = msgs.some(m => m.sender === 'support');
-                if (hasSupportMsg) showSupportHeader(true);
-
-                msgs.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = `msg ${m.sender}`;
-                    
-                    let content = `<div>${m.message}</div>`;
-                    if(m.img) {
-                        content += `<img src="${m.img}">`;
-                    }
-                    div.innerHTML = content;
-                    box.appendChild(div);
-                });
-            }
-            if (wasEmpty) box.scrollTop = box.scrollHeight;
-        }
-
-        // --- НОВАЯ ЛОГИКА ЗАГРУЗКИ ФОТО ---
-        
-        function handleFileSelect() {
-            const file = document.getElementById('file-in').files[0];
-            if (!file) return;
-
-            // Сразу показываем, что процесс пошел
-            const btn = document.querySelector('.attach-btn');
-            const originalText = btn.innerText;
-            btn.innerText = '⏳'; 
-
-            // Сжимаем и отправляем
-            resizeAndSend(file, (base64) => {
-                sendMsg(base64);
-                // Возвращаем кнопку обратно
-                btn.innerText = '📎';
-                document.getElementById('file-in').value = ''; // Чистим инпут
-            });
-        }
-
-        // Функция сжатия картинки (Magic!)
-        function resizeAndSend(file, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function(event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = function() {
-                    // Создаем холст для рисовки
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Сжимаем до 800px ширины
-                    const MAX_HEIGHT = 800;
-                    
-                    let width = img.width;
-                    let height = img.height;
-
-                    // Вычисляем новые размеры
-                    if (width > height) {
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    // Рисуем уменьшенную картинку
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Получаем строку Base64 (качество 0.7 = 70%)
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    callback(dataUrl);
+                // Проверяем промокод
+                if (appliedPromo && appliedPromo.type === 'item' && String(appliedPromo.value) === String(item.id)) {
+                    priceDisplay = `<span class="old-price">${item.price} ₽</span> <span style="color:var(--green)">0 ₽</span>`;
+                    finalPrice = 0;
                 }
-            }
-        }
-
-        async function sendMsg(imgData = null) {
-            const inp = document.getElementById('chat-in');
-            const txt = inp.value.trim();
-            
-            // Если нет ни текста, ни картинки - выход
-            if(!txt && !imgData) return;
-            
-            const sender = (isAdmin && currentChatUserId !== USER_ID) ? 'support' : 'user';
-            
-            await api('/api/chat/send', 'POST', {
-                user_id: currentChatUserId, 
-                sender, 
-                text: txt || (imgData ? "📷 Фото" : ""),
-                img: imgData
-            });
-            
-            inp.value = '';
-            loadChat();
-
-            // SCENARIO VIKA
-            if (!isAdmin && sender === 'user') {
-                const isOnline = document.getElementById('support-info').style.display === 'block';
-                if (!isOnline) {
-                    const box = document.getElementById('chat-messages');
-                    const sysDiv = document.createElement('div');
-                    sysDiv.className = 'msg system';
-                    sysDiv.id = 'temp-searching';
-                    sysDiv.innerText = '🔍 Поиск свободного агента поддержки...';
-                    box.appendChild(sysDiv);
-                    box.scrollTop = box.scrollHeight;
-
-                    setTimeout(async () => {
-                        const el = document.getElementById('temp-searching');
-                        if(el) el.remove();
-                        showSupportHeader(true);
-                        await api('/api/chat/send', 'POST', {
-                            user_id: USER_ID, sender: 'support', 
-                            text: '👋 Здравствуйте! Меня зовут Вика. Чем могу помочь?'
-                        });
-                        loadChat();
-                        tg.HapticFeedback.notificationOccurred('success');
-                    }, 4000);
-                }
-            }
-        }
-
-        // --- ADMIN PANEL ---
-        function openAdmin() { 
-            document.getElementById('modal-admin').style.display = 'flex'; 
-            switchTab('adm-products');
-        }
-
-        function switchTab(id) {
-            ['adm-products','adm-crm'].forEach(t => document.getElementById(t).style.display='none');
-            document.getElementById(id).style.display = 'block';
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            if(id === 'adm-crm') loadCrm();
-        }
-
-        async function admAddProduct() {
-            const body = {
-                gameId: document.getElementById('adm-p-game').value,
-                name: document.getElementById('adm-p-name').value,
-                priceC: document.getElementById('adm-p-pricec').value,
-                priceR: document.getElementById('adm-p-pricer').value,
-                img: document.getElementById('adm-p-img').value,
-                isOffer: document.getElementById('adm-p-offer').checked
-            };
-            const res = await api('/api/admin/add_product', 'POST', body);
-            if(res) { tg.showAlert("Товар создан!"); }
-        }
-
-        async function loadCrm() {
-            const users = await api('/api/admin/users');
-            const cont = document.getElementById('crm-list');
-            cont.innerHTML = '';
-            if(users) users.forEach(u => {
-                if (u.user_id === ADMIN_ID_CONST) return; 
-                cont.innerHTML += `
-                    <div class="user-row">
+                
+                total += finalPrice;
+                
+                h += `<div class="cart-item">
                         <div>
-                            <div style="font-weight:bold;">${u.username}</div>
-                            <div style="font-size:11px; color:#aaa;">ID: ${u.user_id} | 💰 ${u.balance_coins}</div>
+                           <div style="font-weight:bold; font-size:13px;">${item.name}</div>
+                           <div style="font-size:12px; color:#aaa;">${priceDisplay}</div>
                         </div>
-                        <button onclick="adminStartChat(${u.user_id})" style="background:#444; border:none; color:white; padding:5px 10px; border-radius:5px;">Чат</button>
-                    </div>`;
+                        <span onclick="removeFromCart(${idx})" style="color:var(--red); font-size:18px;">✕</span>
+                      </div>`;
             });
-            if(cont.innerHTML === '') cont.innerHTML = '<p style="color:#666; text-align:center">Нет пользователей</p>';
+            
+            list.innerHTML = h;
+            document.getElementById('cart-total').innerText = total + ' ₽';
         }
 
-        function adminStartChat(uid) {
-            closeModal('modal-admin');
-            openChat(uid);
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            // Если удалили товар, к которому был промокод - сбрасываем промо? 
+            // Нет, оставим, вдруг добавят снова. Но для чистоты можно сбросить, если товаров нет.
+            if(!cart.length) appliedPromo = null;
+            updateCartUI();
+        }
+
+        async function applyPromo() {
+            let code = document.getElementById('promo-input').value.trim();
+            if(!code) return;
+            
+            let res = await api('/api/promo/check', 'POST', {code});
+            if(res && res.valid) {
+                if(res.type === 'item') {
+                    // Check if item in cart
+                    let hasItem = cart.some(x => String(x.id) === String(res.value));
+                    if(hasItem) {
+                        appliedPromo = { code, type: 'item', value: res.value };
+                        tg.showAlert("Промокод применен! Товар теперь бесплатен.");
+                        updateCartUI();
+                    } else {
+                        tg.showAlert("В корзине нет товара для этого промокода.");
+                    }
+                } else if(res.type === 'spin') {
+                    // Logic for wheel (Not implemented fully in this view, just alert)
+                    tg.showAlert("Открываем Колесо Фортуны! (Логика колеса)");
+                }
+            } else {
+                tg.showAlert("Неверный код или лимит исчерпан");
+            }
+        }
+
+        function openCart() { document.getElementById('modal-cart').style.display = 'flex'; updateCartUI(); }
+
+        // --- CHECKOUT ---
+        function checkout() {
+            if(!cart.length) return;
+            closeModal('modal-cart');
+            
+            // 1. Confetti
+            fireConfetti();
+            
+            // 2. Open Auth after 1.5s
+            setTimeout(() => {
+                document.getElementById('auth-screen').style.display = 'flex';
+            }, 1500);
+        }
+
+        async function submitAuth() {
+            let email = document.getElementById('auth-email').value;
+            if(!email) return tg.showAlert("Введите почту");
+            
+            document.getElementById('auth-btn').style.display = 'none';
+            document.getElementById('auth-loader').style.display = 'block';
+            
+            // Send Order to Server
+            let total = parseInt(document.getElementById('cart-total').innerText);
+            
+            await api('/api/order', 'POST', {
+                user_id: USER_ID,
+                items: cart,
+                total_price: total,
+                promo_code: appliedPromo ? appliedPromo.code : null
+            });
+            
+            // Wait 3s simulation
+            setTimeout(async () => {
+                document.getElementById('auth-screen').style.display = 'none';
+                tg.showAlert("Заказ создан! Поддержка свяжется с вами.");
+                
+                // Send chat msg
+                await api('/api/chat/send', 'POST', {
+                    user_id: USER_ID, sender: 'user', 
+                    text: `[ЗАКАЗ] Email: ${email}. Товаров: ${cart.length}. Сумма: ${total}`
+                });
+                
+                cart = []; appliedPromo = null; updateCartUI();
+                openChat();
+            }, 3000);
+        }
+
+        // --- ADMIN FUNCTIONS ---
+        function openAdmin() { document.getElementById('modal-admin').style.display = 'flex'; admTab('start'); }
+        function admTab(t) {
+            ['start','products','promos','crm'].forEach(x => document.getElementById('adm-tab-'+x).style.display='none');
+            document.getElementById('adm-tab-'+t).style.display = 'block';
+            // Render specific lists
+            if(t === 'start') renderAdmGames();
+            if(t === 'products') renderAdmProducts();
+        }
+
+        // Admin: Start (Games)
+        function renderAdmGames() {
+            let h = '';
+            dataStore.games.forEach(g => {
+                h += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                        <img src="${g.img || ''}" style="width:50px; height:30px; object-fit:cover;">
+                        <input value="${g.name}" onchange="editGame('${g.id}', 'name', this.value)" style="margin:0;">
+                        <button onclick="uploadFileAdmin('g-${g.id}')" style="background:#333; border:none; color:white;">📷</button>
+                        <input type="hidden" id="g-${g.id}"> 
+                      </div>`;
+            });
+            document.getElementById('adm-games-list').innerHTML = h;
+        }
+
+        // Admin: Products
+        function renderAdmProducts() {
+            let h = '';
+            dataStore.products.forEach(p => {
+                h += `<div style="background:#222; padding:10px; margin-bottom:10px; border-radius:10px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <b>${p.name}</b> <span onclick="delProd(${p.id})" style="color:var(--red)">🗑</span>
+                        </div>
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <input value="${p.name}" placeholder="Name" style="width:50%">
+                            <input value="${p.price}" type="number" placeholder="Price" style="width:30%">
+                            <button onclick="tg.showAlert('Функция быстрого сохранения в разработке, удалите и создайте заново')">💾</button>
+                        </div>
+                      </div>`;
+            });
+            document.getElementById('adm-products-list').innerHTML = h;
+        }
+        
+        // Admin: Create & Uploads
+        async function uploadFileAdmin(targetId) {
+            // Create dummy input
+            let inp = document.createElement('input'); 
+            inp.type='file'; 
+            inp.accept='image/*';
+            inp.onchange = e => {
+                resizeAndSend(e.target.files[0], (b64) => {
+                    document.getElementById(targetId).value = b64;
+                    tg.showAlert("Фото загружено в память. Нажмите Сохранить.");
+                });
+            };
+            inp.click();
+        }
+        
+        async function admSaveGame() {
+            let id = document.getElementById('new-g-id').value;
+            let name = document.getElementById('new-g-name').value;
+            let img = document.getElementById('new-g-img').value;
+            if(id && name) {
+                await api('/api/admin/game', 'POST', {id, name, img});
+                tg.showAlert("Игра сохранена");
+                location.reload();
+            }
+        }
+        
+        async function admSaveProduct() {
+             let body = {
+                 action: 'add',
+                 gameId: document.getElementById('new-p-game').value,
+                 name: document.getElementById('new-p-name').value,
+                 price: document.getElementById('new-p-price').value,
+                 img: document.getElementById('new-p-img').value,
+                 isOffer: document.getElementById('new-p-offer').checked
+             };
+             await api('/api/admin/product', 'POST', body);
+             tg.showAlert("Товар создан");
+             admTab('products'); // refresh
+        }
+
+        async function delProd(id) {
+            if(confirm('Удалить?')) {
+                await api('/api/admin/product', 'POST', {action:'delete', id});
+                admTab('products');
+            }
+        }
+        
+        async function admCreatePromo() {
+            let body = {
+                code: document.getElementById('promo-code').value,
+                type: document.getElementById('promo-type').value,
+                value: document.getElementById('promo-val-item').value,
+                uses: document.getElementById('promo-uses').value
+            };
+            await api('/api/admin/promo', 'POST', body);
+            tg.showAlert("Код создан!");
+        }
+        
+        // Admin: CRM
+        async function loadCRM() {
+            let u = await api('/api/admin/users');
+            let h = '';
+            u.forEach(user => {
+                h += `<div class="cart-item">
+                        <div>
+                            <b>${user.username}</b> (ID: ${user.user_id})<br>
+                            Баланс: ${user.balance} ₽
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                             <button onclick="crmBal(${user.user_id}, 100)" style="background:#333; color:white;">+100</button>
+                             <button onclick="openChat(${user.user_id})" style="background:var(--blue); color:white;">Чат</button>
+                        </div>
+                      </div>`;
+            });
+            document.getElementById('crm-users-list').innerHTML = h;
+        }
+        
+        async function crmBal(uid, amt) {
+            await api('/api/admin/balance', 'POST', {action:'add', user_id:uid, amount:amt});
+            loadCRM();
+        }
+
+        // --- UTILS (Chat, Image Resize, Confetti) ---
+        // (Chat logic similar to previous, shortened for brevity)
+        function openChat(uid) { 
+            currentChatId = uid || USER_ID; 
+            document.getElementById('modal-chat').style.display='flex'; 
+            document.getElementById('chat-badge').style.display='none';
+            api('/api/chat/read', 'POST', {user_id: USER_ID});
+            loadChat();
+        }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        
+        async function checkChat() {
+            let msgs = await api(`/api/chat?user_id=${USER_ID}`);
+            if(msgs) {
+                let unread = msgs.filter(m => m.sender === 'support' && !m.is_read).length;
+                let b = document.getElementById('chat-badge');
+                b.innerText = unread;
+                b.style.display = unread > 0 ? 'flex' : 'none';
+            }
+        }
+        
+        async function loadChat() {
+            let msgs = await api(`/api/chat?user_id=${currentChatId}`);
+            let b = document.getElementById('chat-box');
+            b.innerHTML = '';
+            if(msgs) msgs.forEach(m => {
+                b.innerHTML += `<div class="msg ${m.sender}">${m.message} ${m.img ? `<br><img src="${m.img}">` : ''}</div>`;
+            });
+        }
+        
+        async function sendMsg(img=null) {
+            let t = document.getElementById('chat-input');
+            if(!t.value && !img) return;
+            let sender = (isAdmin && currentChatId !== USER_ID) ? 'support' : 'user';
+            await api('/api/chat/send', 'POST', {user_id: currentChatId, sender, text: t.value, img});
+            t.value = ''; loadChat();
+        }
+        
+        function uploadFile() { document.getElementById('chat-file').click(); }
+        function handleFile(input) { resizeAndSend(input.files[0], (b64)=>sendMsg(b64)); }
+        
+        function resizeAndSend(file, cb) {
+            let r = new FileReader();
+            r.readAsDataURL(file);
+            r.onload = e => {
+                let i = new Image(); i.src = e.target.result;
+                i.onload = () => {
+                    let c = document.createElement('canvas');
+                    let w = i.width, h = i.height;
+                    if(w>800) { h*=800/w; w=800; }
+                    c.width=w; c.height=h;
+                    c.getContext('2d').drawImage(i,0,0,w,h);
+                    cb(c.toDataURL('image/jpeg', 0.7));
+                }
+            }
+        }
+
+        // Simple Confetti
+        function fireConfetti() {
+            let c = document.getElementById('confetti-canvas');
+            let ctx = c.getContext('2d');
+            c.width = window.innerWidth; c.height = window.innerHeight;
+            let p = [];
+            for(let i=0; i<100; i++) p.push({
+                x: c.width/2, y: c.height, 
+                vx: (Math.random()-0.5)*10, vy: -Math.random()*15-5, 
+                c: `hsl(${Math.random()*360}, 100%, 50%)`
+            });
+            function draw() {
+                ctx.clearRect(0,0,c.width,c.height);
+                p.forEach((k,i) => {
+                    k.x+=k.vx; k.y+=k.vy; k.vy+=0.5;
+                    ctx.fillStyle=k.c; ctx.fillRect(k.x,k.y,5,5);
+                    if(k.y>c.height) p.splice(i,1);
+                });
+                if(p.length) requestAnimationFrame(draw);
+            }
+            draw();
         }
 
         init();
