@@ -18,7 +18,7 @@
             -webkit-tap-highlight-color: transparent; user-select: none;
         }
         
-        /* --- LAYOUT & HEADER --- */
+        /* --- UI CSS --- */
         .container { padding: 20px; padding-top: 70px; }
         .header {
             position: fixed; top: 0; left: 0; width: 100%; height: 60px;
@@ -29,8 +29,6 @@
         }
         .balance-box { font-weight: 700; font-size: 16px; color: var(--text); }
         .balance-box span { color: var(--accent); }
-        
-        /* --- CARDS & GRIDS --- */
         h2 { font-size: 22px; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; }
         
         .game-card {
@@ -67,9 +65,8 @@
         .btn:active { opacity: 0.7; }
         .btn-primary { background: var(--text); color: black; }
         .btn-accent { background: var(--accent); color: black; box-shadow: 0 4px 15px var(--accent-glow); }
-        .btn-danger { background: var(--red); color: white; }
 
-        /* --- BOTTOM BAR (NAV) --- */
+        /* --- BOTTOM NAV --- */
         .bottom-nav {
             position: fixed; bottom: 20px; width: 100%; display: flex;
             justify-content: space-around; pointer-events: none; z-index: 1000;
@@ -80,65 +77,52 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.5); pointer-events: auto;
             backdrop-filter: blur(10px); cursor: pointer; position: relative;
         }
-        .fab-left { background: var(--card); border: 1px solid #333; color: #fff; } /* Admin */
-        .fab-center { background: var(--accent); color: #000; width: 60px; height: 60px; margin-bottom: 10px; } /* Cart */
-        .fab-right { background: var(--green); color: #fff; } /* Chat */
+        .fab-left { background: var(--card); border: 1px solid #333; color: #fff; }
+        .fab-center { background: var(--accent); color: #000; width: 60px; height: 60px; margin-bottom: 10px; }
+        .fab-right { background: var(--green); color: #fff; }
         
         .badge {
             position: absolute; top: -2px; right: -2px; background: var(--red); color: white;
             font-size: 10px; width: 18px; height: 18px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-weight: bold;
+            display: none; justify-content: center; align-items: center; font-weight: bold;
             border: 2px solid var(--bg);
         }
+        .badge.show { display: flex; animation: bounce 0.3s; }
+        @keyframes bounce { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
         /* --- MODALS --- */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 2000; display: none;
-            justify-content: flex-end; /* Bottom sheet logic */
+            justify-content: flex-end; 
         }
-        .modal.center { justify-content: center; align-items: center; }
-        
         .modal-content {
             background: #151515; width: 100%; max-height: 90vh;
             border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box;
             overflow-y: auto; border-top: 1px solid #333; animation: slideUp 0.3s;
         }
-        .modal.center .modal-content { width: 90%; border-radius: 20px; max-height: 80vh; animation: zoomIn 0.2s; }
-        
         @keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
-        @keyframes zoomIn { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
-        /* --- CART UI --- */
-        .cart-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--card); padding: 10px; border-radius: 12px; margin-bottom: 10px;
-        }
-        .cart-price { font-weight: bold; }
-        .old-price { text-decoration: line-through; color: #666; font-size: 12px; margin-right: 5px; }
-
-        /* --- CHAT UI --- */
+        /* --- CHAT --- */
         .chat-box { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .msg { padding: 10px 14px; border-radius: 16px; max-width: 80%; font-size: 14px; }
+        .msg { padding: 10px 14px; border-radius: 16px; max-width: 80%; font-size: 14px; word-wrap: break-word; }
         .msg.user { align-self: flex-end; background: var(--blue); }
         .msg.support { align-self: flex-start; background: var(--card); }
-        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; display: block; }
+        .chat-input { display: flex; gap: 10px; margin-top: auto; align-items: center; }
+        .chat-input input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; }
 
-        /* --- ADMIN UI --- */
+        /* --- ADMIN --- */
         .admin-tabs { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; }
         .tab-btn { background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 13px; }
         .tab-btn.active { background: var(--text); color: black; }
         input, select { width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        .icon-btn { background: none; border: none; font-size: 18px; padding: 5px; cursor: pointer; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px; border-radius: 12px; margin-bottom: 10px; }
 
-        /* --- EFFECTS --- */
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5000; }
-        
-        /* AUTH SCREEN */
         #auth-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212;
-            z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center;
-            padding: 30px; text-align: center;
+            z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center;
         }
     </style>
 </head>
@@ -156,7 +140,6 @@
             <h2>🔥 Популярные игры</h2>
             <div id="games-list"></div>
         </div>
-        
         <div id="section-products" style="display:none;">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
                 <button onclick="goHome()" style="background:none; border:none; color:white; font-size:20px;">⬅</button>
@@ -168,39 +151,29 @@
 
     <div class="bottom-nav">
         <div id="btn-admin" class="fab fab-left" style="display:none;" onclick="openAdmin()">⚙️</div>
-        
         <div class="fab fab-center" onclick="openCart()">
-            🛒
-            <div id="cart-badge" class="badge" style="display:none;">0</div>
+            🛒 <div id="cart-badge" class="badge">0</div>
         </div>
-        
         <div class="fab fab-right" onclick="openChat()">
-            💬
-            <div id="chat-badge" class="badge" style="display:none;">1</div>
+            💬 <div id="chat-badge" class="badge">0</div>
         </div>
     </div>
 
     <div id="modal-cart" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Корзина</h2>
-                <span onclick="closeModal('modal-cart')" style="font-size:20px;">✕</span>
+                <h2>Корзина</h2> <span onclick="closeModal('modal-cart')" style="font-size:20px;">✕</span>
             </div>
-            
-            <div id="cart-items">
-                <p style="text-align:center; color:#666; margin: 40px 0;">Корзина пуста</p>
-            </div>
-            
-            <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+            <div id="cart-items"><p style="text-align:center;color:#666;margin:40px 0;">Пусто</p></div>
+            <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
                 <div style="display:flex; gap:10px;">
                     <input type="text" id="promo-input" placeholder="Промокод..." style="margin:0;">
                     <button onclick="applyPromo()" style="width:auto; padding:0 20px; background:#333; color:white; border-radius:10px;">OK</button>
                 </div>
                 <div style="display:flex; justify-content:space-between; margin-top:20px; font-weight:bold; font-size:18px;">
-                    <span>Итого:</span>
-                    <span id="cart-total">0 ₽</span>
+                    <span>Итого:</span> <span id="cart-total">0 ₽</span>
                 </div>
-                <button onclick="checkout()" class="btn btn-accent" style="padding: 15px; margin-top: 15px;">ОФОРМИТЬ ЗАКАЗ</button>
+                <button onclick="checkout()" class="btn btn-accent" style="padding: 15px; margin-top: 15px;">ОФОРМИТЬ</button>
             </div>
         </div>
     </div>
@@ -210,20 +183,17 @@
         <p style="color:#aaa; font-size:13px; margin-bottom:30px;">Введите почту для получения товара</p>
         <input type="email" id="auth-email" placeholder="example@gmail.com" style="text-align:center;">
         <button onclick="submitAuth()" class="btn btn-primary" id="auth-btn">Продолжить</button>
-        <div id="auth-loader" style="display:none; margin-top:20px; color:var(--accent);">
-            ⚡ Обработка данных...
-        </div>
+        <div id="auth-loader" style="display:none; margin-top:20px; color:var(--accent);">⚡ Обработка...</div>
     </div>
 
     <div id="modal-chat" class="modal">
         <div class="modal-content">
             <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display:flex; justify-content:space-between;">
-                <b>Поддержка</b>
-                <span onclick="closeModal('modal-chat')">✕</span>
+                <b>Поддержка</b> <span onclick="closeModal('modal-chat')">✕</span>
             </div>
             <div id="chat-box" class="chat-box"></div>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <span onclick="uploadFile()" style="font-size:24px; color:#aaa;">📎</span>
+            <div class="chat-input">
+                <span onclick="document.getElementById('chat-file').click()" style="font-size:24px; color:#aaa; cursor:pointer;">📎</span>
                 <input type="file" id="chat-file" hidden onchange="handleFile(this)">
                 <input type="text" id="chat-input" placeholder="Сообщение...">
                 <button onclick="sendMsg()" style="width:40px; background:var(--blue); color:white; border-radius:8px;">➤</button>
@@ -236,21 +206,20 @@
             <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                 <b>Админ Панель</b> <span onclick="closeModal('modal-admin')">✕</span>
             </div>
-            
             <div class="admin-tabs">
                 <div class="tab-btn active" onclick="admTab('start')">Старт</div>
                 <div class="tab-btn" onclick="admTab('products')">Товары</div>
                 <div class="tab-btn" onclick="admTab('promos')">Промо</div>
                 <div class="tab-btn" onclick="admTab('crm')">CRM</div>
             </div>
-
+            
             <div id="adm-tab-start">
                 <div id="adm-games-list"></div>
                 <hr style="border-color:#333; margin:15px 0;">
                 <h4>Добавить игру</h4>
                 <input id="new-g-id" placeholder="ID (напр. pubg)">
                 <input id="new-g-name" placeholder="Название">
-                <button onclick="uploadFileAdmin('new-g-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Обложка игры</button>
+                <button onclick="uploadFileAdmin('new-g-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Обложка</button>
                 <input type="hidden" id="new-g-img">
                 <button onclick="admSaveGame()" class="btn btn-primary">Сохранить</button>
             </div>
@@ -260,43 +229,43 @@
                 <select id="new-p-game"></select>
                 <input id="new-p-name" placeholder="Название">
                 <input id="new-p-price" type="number" placeholder="Цена (RUB)">
-                <button onclick="uploadFileAdmin('new-p-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Картинка товара</button>
+                <button onclick="uploadFileAdmin('new-p-img')" style="background:#333; width:100%; margin-bottom:10px; color:#aaa; padding:10px; border-radius:10px;">📎 Картинка</button>
                 <input type="hidden" id="new-p-img">
                 <label><input type="checkbox" id="new-p-offer"> Спецпредложение</label>
                 <button onclick="admSaveProduct()" class="btn btn-primary">Создать</button>
-                
                 <h4 style="margin-top:20px;">Список</h4>
                 <div id="adm-products-list"></div>
             </div>
 
             <div id="adm-tab-promos" style="display:none;">
-                <h4>Генератор кодов</h4>
-                <input id="promo-code" placeholder="Код (напр. FREE100)">
+                <h4>Коды</h4>
+                <input id="promo-code" placeholder="Код">
                 <select id="promo-type">
                     <option value="item">Товар (100% скидка)</option>
-                    <option value="spin">Колесо Фортуны</option>
+                    <option value="spin">Колесо</option>
                 </select>
-                <select id="promo-val-item" style="display:block;"></select> <input id="promo-uses" type="number" placeholder="Кол-во активаций" value="1">
-                <button onclick="admCreatePromo()" class="btn btn-accent">Создать промокод</button>
+                <select id="promo-val-item" style="display:block;"></select> 
+                <input id="promo-uses" type="number" placeholder="Активаций" value="1">
+                <button onclick="admCreatePromo()" class="btn btn-accent">Создать</button>
             </div>
 
             <div id="adm-tab-crm" style="display:none;">
-                <button onclick="loadCRM()" class="btn btn-primary">Обновить список</button>
+                <button onclick="loadCRM()" class="btn btn-primary">Обновить</button>
                 <div id="crm-users-list" style="margin-top:15px;"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ NGROK URL
+        // ⚠️ ВСТАВЬ СЮДА НОВУЮ ССЫЛКУ NGROK
         const BASE_URL = "https://ardath-bootyless-homostyly.ngrok-free.dev";
 
         const tg = window.Telegram.WebApp;
         tg.expand();
         
+        // --- AUTH ---
         let USER_ID = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
         let USERNAME = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Guest";
-        // Fake ID for browser testing
         if(!USER_ID) {
              let s = localStorage.getItem('gid'); 
              if(!s) { s=Math.floor(Math.random()*1e9); localStorage.setItem('gid',s); }
@@ -305,20 +274,29 @@
 
         let isAdmin = false;
         let dataStore = { games: [], products: [] };
-        let cart = []; // [{id, name, price, img, promoApplied?}]
+        let cart = [];
         let currentChatId = USER_ID;
-        let appliedPromo = null; // {code, value (prodId)}
-        let chatInterval = null; // --- ДОБАВЛЕНО: Глобальная переменная для интервала
+        let appliedPromo = null;
+        let isChatOpen = false; // Флаг: открыт ли чат прямо сейчас
 
-        // --- API ---
+        // --- API WRAPPER ---
         async function api(path, method='GET', body=null) {
             try {
                 let opts = { method, headers: {'Content-Type':'application/json','ngrok-skip-browser-warning':'true'} };
                 if(body) opts.body = JSON.stringify(body);
-                let r = await fetch(BASE_URL+path, opts);
-                if(!r.ok) throw new Error("API Error");
+                // Добавляем timestamp чтобы сбить кэш телеграма
+                const separator = path.includes('?') ? '&' : '?';
+                const url = `${BASE_URL}${path}${separator}t=${Date.now()}`;
+                
+                let r = await fetch(url, opts);
+                if(!r.ok) throw new Error("Server Error");
                 return await r.json();
-            } catch(e) { console.error(e); return null; }
+            } catch(e) { 
+                console.error(e);
+                // Не показываем алерт на каждый чих, только если это не фоновый процесс
+                if(!path.includes('api/chat')) tg.showAlert("Ошибка соединения!"); 
+                return null; 
+            }
         }
 
         // --- INIT ---
@@ -330,11 +308,9 @@
                 if(u.is_admin) {
                     isAdmin = true;
                     document.getElementById('btn-admin').style.display = 'flex';
-                    // Админ: корзина посередине
                     document.querySelector('.fab-center').style.left = '50%';
                     document.querySelector('.fab-center').style.transform = 'translateX(-50%)';
                 } else {
-                    // Юзер: корзина слева
                     document.querySelector('.fab-center').classList.replace('fab-center', 'fab-left');
                 }
             }
@@ -345,17 +321,16 @@
                 renderGames();
             }
             
-            // Проверка бейджика каждые 3 сек
-            setInterval(checkChat, 3000);
+            // Запускаем фоновую проверку бейджика (раз в 4 сек)
+            setInterval(checkBadge, 4000);
         }
 
         // --- RENDER ---
         function renderGames() {
             let h = '';
-            // Обновляем селекты в админке
             let sel = document.getElementById('new-p-game');
-            let selP = document.getElementById('adm-p-game'); // в старом коде
-            sel.innerHTML = ''; 
+            let selP = document.getElementById('promo-val-item');
+            sel.innerHTML = ''; selP.innerHTML = '';
             
             dataStore.games.forEach(g => {
                 h += `<div class="game-card" onclick="openProducts('${g.id}', '${g.name}')">
@@ -366,11 +341,8 @@
             });
             document.getElementById('games-list').innerHTML = h;
             
-            // Render promo items select
-            let pSel = document.getElementById('promo-val-item');
-            pSel.innerHTML = '';
             dataStore.products.forEach(p => {
-                pSel.innerHTML += `<option value="${p.id}">${p.name} (${p.price}₽)</option>`;
+                selP.innerHTML += `<option value="${p.id}">${p.name} (${p.price}₽)</option>`;
             });
         }
 
@@ -378,7 +350,6 @@
             document.getElementById('section-start').style.display = 'none';
             document.getElementById('section-products').style.display = 'block';
             document.getElementById('page-title').innerText = gname;
-            
             let h = '';
             dataStore.products.filter(p => p.game_id === gid).forEach(p => {
                 h += `<div class="item-card">
@@ -389,7 +360,7 @@
                         <button onclick="addToCart(${p.id})" class="btn btn-primary">В корзину</button>
                       </div>`;
             });
-            document.getElementById('products-list').innerHTML = h || '<p>Пусто</p>';
+            document.getElementById('products-list').innerHTML = h || '<p style="text-align:center;width:200%;">Пусто</p>';
         }
 
         function goHome() {
@@ -397,15 +368,12 @@
             document.getElementById('section-start').style.display = 'block';
         }
 
-        // --- CART LOGIC ---
+        // --- CART ---
         function addToCart(pid) {
             let p = dataStore.products.find(x => x.id === pid);
-            cart.push({...p}); // Copy object
+            cart.push({...p});
             updateCartUI();
-            
-            // Animation for button? Simple toast
             tg.HapticFeedback.notificationOccurred('success');
-            // Animate badge
             let b = document.getElementById('cart-badge');
             b.classList.add('bounce');
             setTimeout(()=>b.classList.remove('bounce'), 300);
@@ -414,47 +382,35 @@
         function updateCartUI() {
             let b = document.getElementById('cart-badge');
             b.innerText = cart.length;
-            b.style.display = cart.length ? 'flex' : 'none';
+            b.classList.toggle('show', cart.length > 0);
             
             let list = document.getElementById('cart-items');
             if(!cart.length) {
-                list.innerHTML = '<p style="text-align:center;color:#666;margin:40px 0;">Корзина пуста</p>';
+                list.innerHTML = '<p style="text-align:center;color:#666;margin:40px 0;">Пусто</p>';
                 document.getElementById('cart-total').innerText = '0 ₽';
                 return;
             }
             
-            let h = '';
-            let total = 0;
-            
+            let h = ''; let total = 0;
             cart.forEach((item, idx) => {
                 let priceDisplay = `${item.price} ₽`;
                 let finalPrice = item.price;
-                
-                // Проверяем промокод
                 if (appliedPromo && appliedPromo.type === 'item' && String(appliedPromo.value) === String(item.id)) {
                     priceDisplay = `<span class="old-price">${item.price} ₽</span> <span style="color:var(--green)">0 ₽</span>`;
                     finalPrice = 0;
                 }
-                
                 total += finalPrice;
-                
                 h += `<div class="cart-item">
-                        <div>
-                           <div style="font-weight:bold; font-size:13px;">${item.name}</div>
-                           <div style="font-size:12px; color:#aaa;">${priceDisplay}</div>
-                        </div>
-                        <span onclick="removeFromCart(${idx})" style="color:var(--red); font-size:18px;">✕</span>
+                        <div><div style="font-weight:bold;font-size:13px;">${item.name}</div><div style="font-size:12px;color:#aaa;">${priceDisplay}</div></div>
+                        <span onclick="removeFromCart(${idx})" style="color:var(--red);font-size:18px;">✕</span>
                       </div>`;
             });
-            
             list.innerHTML = h;
             document.getElementById('cart-total').innerText = total + ' ₽';
         }
 
         function removeFromCart(idx) {
             cart.splice(idx, 1);
-            // Если удалили товар, к которому был промокод - сбрасываем промо? 
-            // Нет, оставим, вдруг добавят снова. Но для чистоты можно сбросить, если товаров нет.
             if(!cart.length) appliedPromo = null;
             updateCartUI();
         }
@@ -462,256 +418,248 @@
         async function applyPromo() {
             let code = document.getElementById('promo-input').value.trim();
             if(!code) return;
-            
             let res = await api('/api/promo/check', 'POST', {code});
             if(res && res.valid) {
                 if(res.type === 'item') {
-                    // Check if item in cart
                     let hasItem = cart.some(x => String(x.id) === String(res.value));
                     if(hasItem) {
                         appliedPromo = { code, type: 'item', value: res.value };
-                        tg.showAlert("Промокод применен! Товар теперь бесплатен.");
+                        tg.showAlert("Промокод принят!");
                         updateCartUI();
-                    } else {
-                        tg.showAlert("В корзине нет товара для этого промокода.");
-                    }
-                } else if(res.type === 'spin') {
-                    // Logic for wheel (Not implemented fully in this view, just alert)
-                    tg.showAlert("Открываем Колесо Фортуны! (Логика колеса)");
-                }
-            } else {
-                tg.showAlert("Неверный код или лимит исчерпан");
-            }
+                    } else tg.showAlert("Нет товара для этого кода в корзине.");
+                } else tg.showAlert("Колесо фортуны (Coming Soon)");
+            } else tg.showAlert("Неверный код");
         }
 
         function openCart() { document.getElementById('modal-cart').style.display = 'flex'; updateCartUI(); }
-
-        // --- CHECKOUT ---
+        
         function checkout() {
             if(!cart.length) return;
             closeModal('modal-cart');
-            
-            // 1. Confetti
             fireConfetti();
-            
-            // 2. Open Auth after 1.5s
-            setTimeout(() => {
-                document.getElementById('auth-screen').style.display = 'flex';
-            }, 1500);
+            setTimeout(() => document.getElementById('auth-screen').style.display = 'flex', 1500);
         }
 
         async function submitAuth() {
             let email = document.getElementById('auth-email').value;
             if(!email) return tg.showAlert("Введите почту");
-            
             document.getElementById('auth-btn').style.display = 'none';
             document.getElementById('auth-loader').style.display = 'block';
-            
-            // Send Order to Server
             let total = parseInt(document.getElementById('cart-total').innerText);
-            
-            await api('/api/order', 'POST', {
-                user_id: USER_ID,
-                items: cart,
-                total_price: total,
-                promo_code: appliedPromo ? appliedPromo.code : null
-            });
-            
-            // Wait 3s simulation
+            await api('/api/order', 'POST', {user_id: USER_ID, items: cart, total_price: total, promo_code: appliedPromo ? appliedPromo.code : null});
             setTimeout(async () => {
                 document.getElementById('auth-screen').style.display = 'none';
-                tg.showAlert("Заказ создан! Поддержка свяжется с вами.");
-                
-                // Send chat msg
-                await api('/api/chat/send', 'POST', {
-                    user_id: USER_ID, sender: 'user', 
-                    text: `[ЗАКАЗ] Email: ${email}. Товаров: ${cart.length}. Сумма: ${total}`
-                });
-                
+                tg.showAlert("Заказ создан!");
+                await api('/api/chat/send', 'POST', {user_id: USER_ID, sender: 'user', text: `[ЗАКАЗ] Email: ${email}. Сумма: ${total}`});
                 cart = []; appliedPromo = null; updateCartUI();
                 openChat();
             }, 3000);
         }
 
-        // --- ADMIN FUNCTIONS ---
-        function openAdmin() { document.getElementById('modal-admin').style.display = 'flex'; admTab('start'); }
+        // --- CHAT SYSTEM (БЕЗОПАСНЫЙ ПОЛЛИНГ) ---
+        
+        // Главная функция цикла обновлений
+        async function chatLoop() {
+            if(!isChatOpen) return; // Если окно закрыто, стоп
+            
+            await loadChat(); // Грузим сообщения
+            
+            // Если окно все еще открыто, планируем следующий запуск через 4 сек
+            if(isChatOpen) setTimeout(chatLoop, 4000); 
+        }
+
+        function openChat(uid) { 
+            currentChatId = uid || USER_ID; 
+            document.getElementById('modal-chat').style.display='flex'; 
+            document.getElementById('chat-badge').classList.remove('show');
+            api('/api/chat/read', 'POST', {user_id: USER_ID});
+            
+            // Запускаем цикл обновлений
+            if(!isChatOpen) {
+                isChatOpen = true;
+                chatLoop(); 
+            }
+        }
+        
+        function closeModal(id) { 
+            document.getElementById(id).style.display='none';
+            // Если закрыли чат - ставим флаг в false, цикл остановится сам
+            if(id === 'modal-chat') isChatOpen = false;
+        }
+        
+        async function checkBadge() {
+            // Проверяем бейдж только если мы НЕ админ, или если мы админ и не в чате
+            if(isChatOpen) return; 
+            
+            let msgs = await api(`/api/chat?user_id=${USER_ID}`);
+            if(msgs) {
+                let unread = msgs.filter(m => m.sender === 'support' && !m.is_read).length;
+                let b = document.getElementById('chat-badge');
+                b.innerText = unread;
+                b.classList.toggle('show', unread > 0);
+            }
+        }
+        
+        async function loadChat() {
+            let msgs = await api(`/api/chat?user_id=${currentChatId}`);
+            let b = document.getElementById('chat-box');
+            
+            // Если ошибка API, ничего не делаем, чтобы не моргало
+            if(!msgs) return; 
+            
+            b.innerHTML = '';
+            msgs.forEach(m => {
+                let imgHtml = m.img ? `<br><img src="${m.img}">` : '';
+                b.innerHTML += `<div class="msg ${m.sender}">${m.message} ${imgHtml}</div>`;
+            });
+        }
+        
+        async function sendMsg(img=null) {
+            let t = document.getElementById('chat-input');
+            if(!t.value && !img) return;
+            let sender = (isAdmin && currentChatId !== USER_ID) ? 'support' : 'user';
+            await api('/api/chat/send', 'POST', {user_id: currentChatId, sender, text: t.value, img});
+            t.value = ''; 
+            loadChat(); // Мгновенное обновление
+        }
+        
+        function handleFile(input) {
+            let file = input.files[0];
+            if(!file) return;
+            let r = new FileReader();
+            r.readAsDataURL(file);
+            r.onload = e => {
+                let i = new Image(); i.src = e.target.result;
+                i.onload = () => {
+                    let c = document.createElement('canvas');
+                    let w = i.width, h = i.height;
+                    if(w>800) { h*=800/w; w=800; }
+                    c.width=w; c.height=h;
+                    c.getContext('2d').drawImage(i,0,0,w,h);
+                    sendMsg(c.toDataURL('image/jpeg', 0.7));
+                }
+            }
+        }
+
+        // --- ADMIN ---
+        function openAdmin() { document.getElementById('modal-admin').style.display='flex'; admTab('start'); }
         function admTab(t) {
             ['start','products','promos','crm'].forEach(x => document.getElementById('adm-tab-'+x).style.display='none');
             document.getElementById('adm-tab-'+t).style.display = 'block';
-            // Render specific lists
             if(t === 'start') renderAdmGames();
             if(t === 'products') renderAdmProducts();
         }
 
-        // --- ИСПРАВЛЕННЫЙ БЛОК ADMIN GAMES ---
-
-        // 1. Рендер списка игр (Добавили data-name для удобства)
         function renderAdmGames() {
             let h = '';
             dataStore.games.forEach(g => {
                 h += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#222; padding:10px; border-radius:10px;">
                         <img src="${g.img || ''}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
-                        
                         <div style="flex:1;">
-                            <input value="${g.name}" id="name-${g.id}" placeholder="Название" style="margin:0; margin-bottom:5px;">
-                            <div style="font-size:10px; color:#666;">ID: ${g.id}</div>
+                            <input value="${g.name}" id="name-${g.id}" style="margin:0;margin-bottom:5px;">
+                            <div style="font-size:10px;color:#666;">ID: ${g.id}</div>
                         </div>
-
                         <div style="display:flex; flex-direction:column; gap:5px;">
-                            <button onclick="admQuickSave('${g.id}')" style="background:#333; border:1px solid #444; color:white; border-radius:5px; padding:5px;">💾</button>
-                            <button onclick="admUploadExisting('${g.id}')" style="background:#333; border:1px solid #444; color:white; border-radius:5px; padding:5px;">📷</button>
+                            <button onclick="admQuickSave('${g.id}')" style="background:#333;border:1px solid #444;color:white;padding:5px;">💾</button>
+                            <button onclick="admUploadExisting('${g.id}')" style="background:#333;border:1px solid #444;color:white;padding:5px;">📷</button>
                         </div>
                       </div>`;
             });
             document.getElementById('adm-games-list').innerHTML = h;
         }
-
-        // 2. Быстрое сохранение названия существующей игры
+        
         async function admQuickSave(gid) {
             let newName = document.getElementById('name-' + gid).value;
-            // Находим старую картинку, чтобы не стереть её
             let oldGame = dataStore.games.find(x => x.id === gid);
-            
-            await api('/api/admin/game', 'POST', {
-                id: gid, 
-                name: newName, 
-                img: oldGame.img // Оставляем старую картинку
-            });
-            tg.showAlert("Имя обновлено!");
-            init(); // Обновляем данные
+            await api('/api/admin/game', 'POST', { id: gid, name: newName, img: oldGame.img });
+            tg.showAlert("Обновлено!"); init();
         }
 
-        // 3. Загрузка фото для СУЩЕСТВУЮЩЕЙ игры (Сохраняет сразу)
         function admUploadExisting(gid) {
-            let inp = document.createElement('input'); 
-            inp.type='file'; 
-            inp.accept='image/*';
+            let inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
             inp.onchange = e => {
-                resizeAndSend(e.target.files[0], async (b64) => {
-                    let currentName = document.getElementById('name-' + gid).value;
-                    
-                    // Сразу отправляем на сервер
-                    await api('/api/admin/game', 'POST', {
-                        id: gid,
-                        name: currentName,
-                        img: b64
-                    });
-                    
-                    tg.showAlert("Обложка обновлена!");
-                    init(); // Перерисовываем экран
-                });
+                let r = new FileReader(); r.readAsDataURL(e.target.files[0]);
+                r.onload = ev => {
+                    let i = new Image(); i.src = ev.target.result;
+                    i.onload = () => {
+                        let c = document.createElement('canvas'); let w=i.width, h=i.height;
+                        if(w>800){h*=800/w;w=800;} c.width=w; c.height=h; c.getContext('2d').drawImage(i,0,0,w,h);
+                        api('/api/admin/game', 'POST', {id: gid, name: document.getElementById('name-'+gid).value, img: c.toDataURL('image/jpeg',0.7)})
+                        .then(() => { tg.showAlert("Фото обновлено!"); init(); });
+                    }
+                }
             };
             inp.click();
         }
-        
-        // 4. Сохранение НОВОЙ игры (С проверкой ошибок)
-        async function admSaveGame() {
-            let id = document.getElementById('new-g-id').value.trim();
-            let name = document.getElementById('new-g-name').value.trim();
-            let img = document.getElementById('new-g-img').value;
-            
-            if(!id) return tg.showAlert("❌ Ошибка: Введите ID (на латинице, например 'pubg')");
-            if(!name) return tg.showAlert("❌ Ошибка: Введите Название игры");
-            if(!img) return tg.showAlert("❌ Ошибка: Загрузите обложку!");
 
-            await api('/api/admin/game', 'POST', {id, name, img});
-            
-            tg.showAlert("✅ Игра успешно добавлена!");
-            
-            // Чистим поля
-            document.getElementById('new-g-id').value = '';
-            document.getElementById('new-g-name').value = '';
-            document.getElementById('new-g-img').value = '';
-            
-            init(); // Обновляем список
-        }
-
-        // Admin: Products
         function renderAdmProducts() {
             let h = '';
             dataStore.products.forEach(p => {
-                h += `<div style="background:#222; padding:10px; margin-bottom:10px; border-radius:10px;">
-                        <div style="display:flex; justify-content:space-between;">
-                            <b>${p.name}</b> <span onclick="delProd(${p.id})" style="color:var(--red)">🗑</span>
-                        </div>
-                        <div style="display:flex; gap:5px; margin-top:5px;">
-                            <input value="${p.name}" placeholder="Name" style="width:50%">
-                            <input value="${p.price}" type="number" placeholder="Price" style="width:30%">
-                            <button onclick="tg.showAlert('Функция быстрого сохранения в разработке, удалите и создайте заново')">💾</button>
-                        </div>
+                h += `<div style="background:#222; padding:10px; margin-bottom:10px; border-radius:10px; display:flex; justify-content:space-between;">
+                        <b>${p.name}</b> <span onclick="delProd(${p.id})" style="color:var(--red)">🗑</span>
                       </div>`;
             });
             document.getElementById('adm-products-list').innerHTML = h;
         }
         
-        // Admin: Create & Uploads
-        async function uploadFileAdmin(targetId) {
-            // Create dummy input
-            let inp = document.createElement('input'); 
-            inp.type='file'; 
-            inp.accept='image/*';
+        async function uploadFileAdmin(tid) {
+            let inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
             inp.onchange = e => {
-                resizeAndSend(e.target.files[0], (b64) => {
-                    document.getElementById(targetId).value = b64;
-                    tg.showAlert("Фото загружено в память. Нажмите Сохранить.");
-                });
+                let r = new FileReader(); r.readAsDataURL(e.target.files[0]);
+                r.onload = ev => {
+                    let i = new Image(); i.src = ev.target.result;
+                    i.onload = () => {
+                        let c = document.createElement('canvas'); let w=i.width, h=i.height;
+                        if(w>800){h*=800/w;w=800;} c.width=w; c.height=h; c.getContext('2d').drawImage(i,0,0,w,h);
+                        document.getElementById(tid).value = c.toDataURL('image/jpeg', 0.7);
+                        tg.showAlert("Фото готово. Жмите Создать/Сохранить.");
+                    }
+                }
             };
             inp.click();
         }
-        
+
         async function admSaveGame() {
             let id = document.getElementById('new-g-id').value;
             let name = document.getElementById('new-g-name').value;
             let img = document.getElementById('new-g-img').value;
-            if(id && name) {
-                await api('/api/admin/game', 'POST', {id, name, img});
-                tg.showAlert("Игра сохранена");
-                location.reload();
-            }
+            if(!id) return tg.showAlert("Введите ID!");
+            await api('/api/admin/game', 'POST', {id, name, img});
+            tg.showAlert("Игра создана"); location.reload();
         }
         
         async function admSaveProduct() {
-             let body = {
+             await api('/api/admin/product', 'POST', {
                  action: 'add',
                  gameId: document.getElementById('new-p-game').value,
                  name: document.getElementById('new-p-name').value,
                  price: document.getElementById('new-p-price').value,
                  img: document.getElementById('new-p-img').value,
                  isOffer: document.getElementById('new-p-offer').checked
-             };
-             await api('/api/admin/product', 'POST', body);
-             tg.showAlert("Товар создан");
-             admTab('products'); // refresh
+             });
+             tg.showAlert("Товар создан"); admTab('products');
         }
 
         async function delProd(id) {
-            if(confirm('Удалить?')) {
-                await api('/api/admin/product', 'POST', {action:'delete', id});
-                admTab('products');
-            }
+            if(confirm('Удалить?')) { await api('/api/admin/product', 'POST', {action:'delete', id}); admTab('products'); }
         }
         
         async function admCreatePromo() {
-            let body = {
+            await api('/api/admin/promo', 'POST', {
                 code: document.getElementById('promo-code').value,
                 type: document.getElementById('promo-type').value,
                 value: document.getElementById('promo-val-item').value,
                 uses: document.getElementById('promo-uses').value
-            };
-            await api('/api/admin/promo', 'POST', body);
+            });
             tg.showAlert("Код создан!");
         }
         
-        // Admin: CRM
         async function loadCRM() {
             let u = await api('/api/admin/users');
             let h = '';
             u.forEach(user => {
                 h += `<div class="cart-item">
-                        <div>
-                            <b>${user.username}</b> (ID: ${user.user_id})<br>
-                            Баланс: ${user.balance} ₽
-                        </div>
+                        <div><b>${user.username}</b> (ID: ${user.user_id})<br>Баланс: ${user.balance} ₽</div>
                         <div style="display:flex; gap:5px;">
                              <button onclick="crmBal(${user.user_id}, 100)" style="background:#333; color:white;">+100</button>
                              <button onclick="openChat(${user.user_id})" style="background:var(--blue); color:white;">Чат</button>
@@ -726,97 +674,15 @@
             loadCRM();
         }
 
-        // --- UTILS (Chat, Image Resize, Confetti) ---
-        // (Chat logic similar to previous, shortened for brevity)
-        function openChat(uid) { 
-            currentChatId = uid || USER_ID; 
-            document.getElementById('modal-chat').style.display='flex'; 
-            document.getElementById('chat-badge').style.display='none';
-            api('/api/chat/read', 'POST', {user_id: USER_ID});
-            
-            // 1. Загружаем сразу
-            loadChat();
-            
-            // 2. --- ИСПРАВЛЕНИЕ: Запуск таймера ---
-            if (chatInterval) clearInterval(chatInterval);
-            chatInterval = setInterval(loadChat, 2000);
-        }
-        
-        function closeModal(id) { 
-            document.getElementById(id).style.display='none';
-            // --- ИСПРАВЛЕНИЕ: Остановка таймера ---
-            if (id === 'modal-chat' && chatInterval) {
-                clearInterval(chatInterval);
-                chatInterval = null;
-            }
-        }
-        
-        async function checkChat() {
-            // Добавили &t=... для сброса кэша
-            let msgs = await api(`/api/chat?user_id=${USER_ID}&t=${Date.now()}`);
-            if(msgs) {
-                let unread = msgs.filter(m => m.sender === 'support' && !m.is_read).length;
-                let b = document.getElementById('chat-badge');
-                b.innerText = unread;
-                b.style.display = unread > 0 ? 'flex' : 'none';
-            }
-        }
-        
-        async function loadChat() {
-            // Добавили &t=... для сброса кэша
-            let msgs = await api(`/api/chat?user_id=${currentChatId}&t=${Date.now()}`);
-            let b = document.getElementById('chat-box');
-            b.innerHTML = '';
-            if(msgs) msgs.forEach(m => {
-                b.innerHTML += `<div class="msg ${m.sender}">${m.message} ${m.img ? `<br><img src="${m.img}">` : ''}</div>`;
-            });
-        }
-        
-        async function sendMsg(img=null) {
-            let t = document.getElementById('chat-input');
-            if(!t.value && !img) return;
-            let sender = (isAdmin && currentChatId !== USER_ID) ? 'support' : 'user';
-            await api('/api/chat/send', 'POST', {user_id: currentChatId, sender, text: t.value, img});
-            t.value = ''; loadChat();
-        }
-        
-        function uploadFile() { document.getElementById('chat-file').click(); }
-        function handleFile(input) { resizeAndSend(input.files[0], (b64)=>sendMsg(b64)); }
-        
-        function resizeAndSend(file, cb) {
-            let r = new FileReader();
-            r.readAsDataURL(file);
-            r.onload = e => {
-                let i = new Image(); i.src = e.target.result;
-                i.onload = () => {
-                    let c = document.createElement('canvas');
-                    let w = i.width, h = i.height;
-                    if(w>800) { h*=800/w; w=800; }
-                    c.width=w; c.height=h;
-                    c.getContext('2d').drawImage(i,0,0,w,h);
-                    cb(c.toDataURL('image/jpeg', 0.7));
-                }
-            }
-        }
-
-        // Simple Confetti
         function fireConfetti() {
             let c = document.getElementById('confetti-canvas');
             let ctx = c.getContext('2d');
             c.width = window.innerWidth; c.height = window.innerHeight;
             let p = [];
-            for(let i=0; i<100; i++) p.push({
-                x: c.width/2, y: c.height, 
-                vx: (Math.random()-0.5)*10, vy: -Math.random()*15-5, 
-                c: `hsl(${Math.random()*360}, 100%, 50%)`
-            });
+            for(let i=0; i<100; i++) p.push({ x: c.width/2, y: c.height, vx: (Math.random()-0.5)*10, vy: -Math.random()*15-5, c: `hsl(${Math.random()*360}, 100%, 50%)` });
             function draw() {
                 ctx.clearRect(0,0,c.width,c.height);
-                p.forEach((k,i) => {
-                    k.x+=k.vx; k.y+=k.vy; k.vy+=0.5;
-                    ctx.fillStyle=k.c; ctx.fillRect(k.x,k.y,5,5);
-                    if(k.y>c.height) p.splice(i,1);
-                });
+                p.forEach((k,i) => { k.x+=k.vx; k.y+=k.vy; k.vy+=0.5; ctx.fillStyle=k.c; ctx.fillRect(k.x,k.y,5,5); if(k.y>c.height) p.splice(i,1); });
                 if(p.length) requestAnimationFrame(draw);
             }
             draw();
