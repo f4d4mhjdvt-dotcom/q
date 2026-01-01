@@ -543,18 +543,87 @@
             if(t === 'products') renderAdmProducts();
         }
 
-        // Admin: Start (Games)
+        // --- ИСПРАВЛЕННЫЙ БЛОК ADMIN GAMES ---
+
+        // 1. Рендер списка игр (Добавили data-name для удобства)
         function renderAdmGames() {
             let h = '';
             dataStore.games.forEach(g => {
-                h += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                        <img src="${g.img || ''}" style="width:50px; height:30px; object-fit:cover;">
-                        <input value="${g.name}" onchange="editGame('${g.id}', 'name', this.value)" style="margin:0;">
-                        <button onclick="uploadFileAdmin('g-${g.id}')" style="background:#333; border:none; color:white;">📷</button>
-                        <input type="hidden" id="g-${g.id}"> 
+                h += `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#222; padding:10px; border-radius:10px;">
+                        <img src="${g.img || ''}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
+                        
+                        <div style="flex:1;">
+                            <input value="${g.name}" id="name-${g.id}" placeholder="Название" style="margin:0; margin-bottom:5px;">
+                            <div style="font-size:10px; color:#666;">ID: ${g.id}</div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <button onclick="admQuickSave('${g.id}')" style="background:#333; border:1px solid #444; color:white; border-radius:5px; padding:5px;">💾</button>
+                            <button onclick="admUploadExisting('${g.id}')" style="background:#333; border:1px solid #444; color:white; border-radius:5px; padding:5px;">📷</button>
+                        </div>
                       </div>`;
             });
             document.getElementById('adm-games-list').innerHTML = h;
+        }
+
+        // 2. Быстрое сохранение названия существующей игры
+        async function admQuickSave(gid) {
+            let newName = document.getElementById('name-' + gid).value;
+            // Находим старую картинку, чтобы не стереть её
+            let oldGame = dataStore.games.find(x => x.id === gid);
+            
+            await api('/api/admin/game', 'POST', {
+                id: gid, 
+                name: newName, 
+                img: oldGame.img // Оставляем старую картинку
+            });
+            tg.showAlert("Имя обновлено!");
+            init(); // Обновляем данные
+        }
+
+        // 3. Загрузка фото для СУЩЕСТВУЮЩЕЙ игры (Сохраняет сразу)
+        function admUploadExisting(gid) {
+            let inp = document.createElement('input'); 
+            inp.type='file'; 
+            inp.accept='image/*';
+            inp.onchange = e => {
+                resizeAndSend(e.target.files[0], async (b64) => {
+                    let currentName = document.getElementById('name-' + gid).value;
+                    
+                    // Сразу отправляем на сервер
+                    await api('/api/admin/game', 'POST', {
+                        id: gid,
+                        name: currentName,
+                        img: b64
+                    });
+                    
+                    tg.showAlert("Обложка обновлена!");
+                    init(); // Перерисовываем экран
+                });
+            };
+            inp.click();
+        }
+        
+        // 4. Сохранение НОВОЙ игры (С проверкой ошибок)
+        async function admSaveGame() {
+            let id = document.getElementById('new-g-id').value.trim();
+            let name = document.getElementById('new-g-name').value.trim();
+            let img = document.getElementById('new-g-img').value;
+            
+            if(!id) return tg.showAlert("❌ Ошибка: Введите ID (на латинице, например 'pubg')");
+            if(!name) return tg.showAlert("❌ Ошибка: Введите Название игры");
+            if(!img) return tg.showAlert("❌ Ошибка: Загрузите обложку!");
+
+            await api('/api/admin/game', 'POST', {id, name, img});
+            
+            tg.showAlert("✅ Игра успешно добавлена!");
+            
+            // Чистим поля
+            document.getElementById('new-g-id').value = '';
+            document.getElementById('new-g-name').value = '';
+            document.getElementById('new-g-img').value = '';
+            
+            init(); // Обновляем список
         }
 
         // Admin: Products
