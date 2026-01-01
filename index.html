@@ -308,6 +308,7 @@
         let cart = []; // [{id, name, price, img, promoApplied?}]
         let currentChatId = USER_ID;
         let appliedPromo = null; // {code, value (prodId)}
+        let chatInterval = null; // --- ДОБАВЛЕНО: Глобальная переменная для интервала
 
         // --- API ---
         async function api(path, method='GET', body=null) {
@@ -344,6 +345,7 @@
                 renderGames();
             }
             
+            // Проверка бейджика каждые 3 сек
             setInterval(checkChat, 3000);
         }
 
@@ -662,12 +664,27 @@
             document.getElementById('modal-chat').style.display='flex'; 
             document.getElementById('chat-badge').style.display='none';
             api('/api/chat/read', 'POST', {user_id: USER_ID});
+            
+            // 1. Загружаем сразу
             loadChat();
+            
+            // 2. --- ИСПРАВЛЕНИЕ: Запуск таймера ---
+            if (chatInterval) clearInterval(chatInterval);
+            chatInterval = setInterval(loadChat, 2000);
         }
-        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        
+        function closeModal(id) { 
+            document.getElementById(id).style.display='none';
+            // --- ИСПРАВЛЕНИЕ: Остановка таймера ---
+            if (id === 'modal-chat' && chatInterval) {
+                clearInterval(chatInterval);
+                chatInterval = null;
+            }
+        }
         
         async function checkChat() {
-            let msgs = await api(`/api/chat?user_id=${USER_ID}`);
+            // Добавили &t=... для сброса кэша
+            let msgs = await api(`/api/chat?user_id=${USER_ID}&t=${Date.now()}`);
             if(msgs) {
                 let unread = msgs.filter(m => m.sender === 'support' && !m.is_read).length;
                 let b = document.getElementById('chat-badge');
@@ -677,7 +694,8 @@
         }
         
         async function loadChat() {
-            let msgs = await api(`/api/chat?user_id=${currentChatId}`);
+            // Добавили &t=... для сброса кэша
+            let msgs = await api(`/api/chat?user_id=${currentChatId}&t=${Date.now()}`);
             let b = document.getElementById('chat-box');
             b.innerHTML = '';
             if(msgs) msgs.forEach(m => {
